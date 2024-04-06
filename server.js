@@ -1,0 +1,44 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+dotenv.config();
+import rootRoute from "./routes/index.js";
+import dbConnection from "./config/dbConfig.js";
+dbConnection;
+import cookieParser from "cookie-parser";
+import passport from "passport";
+
+//handle uncaught exceptions errors
+process.on("uncaughtException", (error) => {
+  console.log(`Error:", ${error}`);
+  console.log("Shutting down server due to Unhandled Promise rejection");
+  process.exit(1);
+});
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.use(cookieParser());
+
+app.use(passport.initialize());
+import "./config/passport.js";
+
+app.use("/api", rootRoute);
+
+const server = app.listen(process.env.PORT, () => {
+  console.log(
+    `app running on port ${process.env.PORT} in ${process.env.NODE_ENV} mode !`
+  );
+});
+
+//Handle Unhandled Promise rejection errors
+
+process.on("unhandledRejection", (error) => {
+  console.log(`Error:", ${error}`);
+  console.log("Shutting down server due to Unhandled Promise rejection");
+  server.close(() => {
+    process.exit(1);
+  });
+});
