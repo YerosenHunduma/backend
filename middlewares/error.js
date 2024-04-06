@@ -23,6 +23,7 @@ export default (err, req, res, next) => {
   if (err?.code === 11000) {
     const message = `${Object.keys(err?.keyValue)} already taken. Please try with different ${Object.keys(err?.keyValue)} `;
     error = new errorHandler(message, 400);
+    console.log(message);
   }
 
   // handle Invalid Jwt error

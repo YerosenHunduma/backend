@@ -10,7 +10,9 @@ import sendEmail from "../utils/sendEmail.js";
 import crypto from "crypto";
 
 export const SignUp = catchAsyncError(async (req, res, next) => {
-  const { name, username, email, password } = req.body;
+  const { name, userName, lastName, address, phoneNumber, email, password } =
+    req.body;
+  console.log(req.body);
   const error = validationResult(req);
   try {
     if (!error.isEmpty()) {
@@ -21,8 +23,11 @@ export const SignUp = catchAsyncError(async (req, res, next) => {
     const hashedPassword = bcrypt.hashSync(password, salt);
     await new User({
       name,
-      username,
+      userName,
+      lastName,
       email,
+      address,
+      phoneNumber,
       password: hashedPassword,
     }).save();
     res.status(201).json("User Registered Successfully");
@@ -45,7 +50,7 @@ export const Signin = catchAsyncError(async (req, res, next) => {
       res
         .cookie("access_token", token, { httpOnly: true })
         .status(200)
-        .json({ success: true, userInfo, token });
+        .json({ success: true, userInfo });
     } catch (error) {
       next(error);
     }
@@ -58,6 +63,7 @@ export const Signin = catchAsyncError(async (req, res, next) => {
 // };
 
 export const signOut = async (req, res) => {
+  console.log(req.cookie);
   res.cookie("access_token", null, {
     expires: new Date(Date.now()),
     httpOnly: true,
