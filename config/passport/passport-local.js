@@ -11,7 +11,7 @@ const AuthenticatedUser = async (email, password, done) => {
   try {
     const user = await User.findOne({ email });
     if (!user) return done(null, false, { message: "User not found" });
-    const isMathch = await bcrypt.compare(password, user.password);
+    const isMathch = bcrypt.compare(password, user.password);
     if (isMathch)
       return done(null, user, { message: "signed in successfully" });
     else

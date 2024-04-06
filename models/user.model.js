@@ -7,6 +7,10 @@ const userSchema = new Schema(
       type: String,
       trim: true,
     },
+    lastName:{
+      type: String,
+      required: true,
+    },
     username: {
       type: String,
       required: true,
@@ -30,10 +34,11 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
-    phone: {
+    phoneNumber: {
       type: String,
       default: "",
     },
+
     photo: {},
     role: {
       type: [String],
