@@ -19,7 +19,7 @@ export const registerationValidator = [
     .withMessage(
       "Password must be 8+ chars with lowercase, uppercase, numeric, and special symbols."
     ),
-  body("Cpassword").custom((value, { req }) => {
+  body("confirmPassword").custom((value, { req }) => {
     if (value !== req.body.password) {
       throw new Error("Passwords do not match");
     }

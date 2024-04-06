@@ -11,6 +11,7 @@ import crypto from "crypto";
 
 export const SignUp = catchAsyncError(async (req, res, next) => {
   const { name, username, email, password } = req.body;
+  console.log(req.body);
   const error = validationResult(req);
   try {
     if (!error.isEmpty()) {
