@@ -10,7 +10,7 @@ import sendEmail from "../utils/sendEmail.js";
 import crypto from "crypto";
 
 export const SignUp = catchAsyncError(async (req, res, next) => {
-  const { name, userName, lastName, address, phoneNumber, email, password } =
+  const { name, username, lastName, address, phoneNumber, email, password } =
     req.body;
   console.log(req.body);
   const error = validationResult(req);
@@ -23,7 +23,7 @@ export const SignUp = catchAsyncError(async (req, res, next) => {
     const hashedPassword = bcrypt.hashSync(password, salt);
     await new User({
       name,
-      userName,
+      username,
       lastName,
       email,
       address,
