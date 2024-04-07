@@ -10,7 +10,8 @@ import sendEmail from "../utils/sendEmail.js";
 import crypto from "crypto";
 
 export const SignUp = catchAsyncError(async (req, res, next) => {
-  const { name, username, email, password } = req.body;
+  const { name, username, email, password, lastName, phoneNumber, address } =
+    req.body;
   const error = validationResult(req);
   try {
     if (!error.isEmpty()) {
@@ -82,7 +83,7 @@ export const forgotPassword = catchAsyncError(async (req, res, next) => {
 
   await user.save();
 
-  const resetUrl = `${process.env.FrontEndUrl}/api/auth/forgetPassword/${resetToken}`;
+  const resetUrl = `${process.env.FrontEndUrl}/resetpassword/${resetToken}`;
 
   const message = getResetPasswordTemplate(user?.name, resetUrl);
 
@@ -92,7 +93,7 @@ export const forgotPassword = catchAsyncError(async (req, res, next) => {
       subject: "AssetMarketSquare Password Reset",
       message,
     });
-    res.status(400).json({
+    res.status(200).json({
       success: true,
       message: `Password reset link has been sent to ${user.email}`,
     });
