@@ -11,7 +11,10 @@ export const PaymentService = async (req, res) => {
   const tx_ref = await chapa.generateTransactionReference();
 
   const { name, lastName, email, amount } = req.body;
-
+  const broker = await Broker.findOne({ email });
+  if (!broker) {
+    return res.status(404).send("Broker not found");
+  }
   const parsedAmount = parseInt(amount);
   if (parsedAmount !== 100 && parsedAmount !== 500 && parsedAmount !== 1000) {
     return res.json({ success: false, message: "Invalid amount" });
@@ -54,14 +57,8 @@ export const chapaWebhook = async (req, res) => {
     .createHmac("sha256", secret)
     .update(JSON.stringify(req.body))
     .digest("hex");
-  console.log("body", req.body);
-  console.log("chapa hash", req.headers["x-chapa-signature"]);
-  console.log("env hash", hash);
   if (hash == req.headers["x-chapa-signature"]) {
     const broker = await Broker.findOne({ email });
-    if (!broker) {
-      return res.status(404).send("Broker not found");
-    }
     let plan = "";
     let startDate = new Date(created_at);
     let endDate;
@@ -78,6 +75,12 @@ export const chapaWebhook = async (req, res) => {
       return res.send("Invalid amount");
     }
 
+    console.log(
+      broker.subscription.plan,
+      broker.subscription.startDate,
+      broker.subscription.endDate
+    );
+    console.log(plan, startDate, endDate);
     const paidBy = broker ? broker._id : null;
     broker.subscription.plan = plan;
     broker.subscription.startDate = startDate;
