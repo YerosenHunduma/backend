@@ -1,4 +1,6 @@
+import Broker from "../models/broker.model.js";
 import User from "../models/user.model.js";
+import verfiyTokenModel from "../models/verfiyToken.model.js";
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
 import passport from "passport";
@@ -36,6 +38,7 @@ export const SignUp = catchAsyncError(async (req, res, next) => {
 });
 
 export const Signin = catchAsyncError(async (req, res, next) => {
+  console.log(req.body);
   passport.authenticate("local", async (err, user, info) => {
     try {
       if (err || !user) {
@@ -56,70 +59,99 @@ export const Signin = catchAsyncError(async (req, res, next) => {
   })(req, res, next);
 });
 
-// export const signOut = async (req, res) => {
-//   res.clearCookie("access_token");
-//   res.status(200).json({ success: true, message: "Successfully signed out" });
-// };
-
 export const signOut = async (req, res) => {
-  console.log(req.cookie);
   res.cookie("access_token", null, {
     expires: new Date(Date.now()),
     httpOnly: true,
   });
   res.status(200).json({ success: true, message: "Successfully signed out" });
 };
-
 export const forgotPassword = catchAsyncError(async (req, res, next) => {
   const { email } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) {
-    return next(
-      new errorHandler("No user is found with this email address", 404)
-    );
+  let userType;
+  let existingUser;
+  console.log(email);
+  const existingBroker = await Broker.findOne({ email });
+  if (!existingBroker) {
+    existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return next(
+        new errorHandler("No user is found with this email address", 404)
+      );
+    }
+    userType = "User";
+  } else {
+    userType = "Broker";
+  }
+  let verificationToken = await verfiyTokenModel.findOne({
+    _userId: existingBroker ? existingBroker._id : existingUser._id,
+  });
+
+  if (verificationToken) {
+    await verfiyTokenModel.deleteOne();
   }
 
-  const resetToken = user.generateResetPasswordToken();
+  const reset_Token = crypto.randomBytes(32).toString("hex");
 
-  await user.save();
-
-  const resetUrl = `${process.env.FrontEndUrl}/resetpassword/${resetToken}`;
-
-  const message = getResetPasswordTemplate(user?.name, resetUrl);
+  let newVerificationToken = await new verfiyTokenModel({
+    _userId: existingBroker ? existingBroker._id : existingUser._id,
+    token: reset_Token,
+    createdAt: Date.now(),
+    userType,
+  }).save();
 
   try {
-    await sendEmail({
-      email: user.email,
-      subject: "AssetMarketSquare Password Reset",
-      message,
-    });
-    res.status(200).json({
-      success: true,
-      message: `Password reset link has been sent to ${user.email}`,
-    });
+    if (existingBroker || existingUser) {
+      let resetToken = newVerificationToken.token;
+      let userId = existingBroker ? existingBroker._id : existingUser._id;
+
+      const resetUrl = `${process.env.FrontEndUrl}/resetpassword/${resetToken}/${userId}`;
+
+      console.log(resetUrl);
+      const message = getResetPasswordTemplate(
+        existingBroker ? existingBroker.name : existingUser.name,
+        resetUrl
+      );
+      await sendEmail({
+        email: existingBroker ? existingBroker.email : existingUser.email,
+        subject: "AssetMarketSquare Password Reset",
+        message,
+      });
+      res.status(200).json({
+        success: true,
+        message: `Password reset link has been sent to ${existingBroker ? existingBroker.email : existingUser.email}`,
+      });
+    }
   } catch (error) {
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save();
+    await verfiyTokenModel.findByIdAndDelete(
+      existingBroker ? existingBroker._id : existingUser._id
+    );
     next(error);
   }
 });
 
 export const resetPassword = catchAsyncError(async (req, res, next) => {
-  const { token } = req.params;
-  const resetPasswordToken = crypto
-    .createHash("sha256")
-    .update(token)
-    .digest("hex");
-  const user = await User.findOne({
-    resetPasswordToken,
-    resetPasswordExpire: { $gt: Date.now() },
-  });
+  const { token, userId } = req.params;
+  console.log(req.body);
+  console.log(req.params);
 
-  if (!user) {
+  const passwordResetToken = await verfiyTokenModel.findOne({
+    _userId: userId,
+  });
+  if (!passwordResetToken || passwordResetToken.token !== token) {
     return next(
-      new errorHandler("Password reset token is invalid or has expired", 400)
+      new errorHandler(
+        "Your token is expired or invalid. Try resetting your password again",
+        400
+      )
     );
+  }
+
+  let existingUser;
+  existingUser = await Broker.findById(userId);
+
+  if (!existingUser) {
+    existingUser = await User.findById(userId);
   }
 
   const error = validationResult(req);
@@ -129,14 +161,15 @@ export const resetPassword = catchAsyncError(async (req, res, next) => {
       const errorMessage = error.array().map((err) => err.msg);
       return next(new errorHandler(errorMessage[0], 400));
     }
+
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(req.body.password, salt);
-    user.password = hashedPassword;
+    existingUser.password = hashedPassword;
 
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
+    await verfiyTokenModel.findByIdAndDelete(passwordResetToken._id);
 
-    await user.save();
+    await existingUser.save();
+
     res.status(200).json({
       success: true,
       message: "Password reset successfully",

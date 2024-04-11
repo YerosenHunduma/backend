@@ -1,5 +1,4 @@
 import { model, Schema, ObjectId } from "mongoose";
-import crypto from "crypto";
 
 const userSchema = new Schema(
   {
@@ -7,9 +6,9 @@ const userSchema = new Schema(
       type: String,
       trim: true,
     },
-    lastName:{
+    lastName: {
       type: String,
-      required: true,
+      trim: true,
     },
     username: {
       type: String,
@@ -40,10 +39,14 @@ const userSchema = new Schema(
     },
 
     photo: {},
+    active: {
+      type: Boolean,
+      default: true,
+    },
     role: {
       type: [String],
       default: ["Buyer"],
-      enum: ["Buyer", "Seller", "Admin"],
+      enum: ["Buyer", "Admin"],
     },
     favorite: [
       {
@@ -51,41 +54,10 @@ const userSchema = new Schema(
         ref: "Assets",
       },
     ],
-    subscription: {
-      type: {
-        plan: {
-          type: String,
-          enum: ["monthly", "quarterly", "yearly"],
-          required: true,
-        },
-        startDate: {
-          type: Date,
-          required: true,
-        },
-        endDate: {
-          type: Date,
-          required: true,
-        },
-      },
-    },
-    resetPasswordToken: String,
-    resetPasswordExpire: Date,
   },
   {
     timestamps: true,
   }
 );
-
-userSchema.methods.generateResetPasswordToken = function () {
-  const resetToken = crypto.randomBytes(20).toString("hex");
-
-  this.resetPasswordToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
-  this.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
-
-  return resetToken;
-};
 
 export default model("User", userSchema);
