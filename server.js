@@ -7,6 +7,7 @@ import dbConnection from "./config/dbConfig.js";
 dbConnection;
 import cookieParser from "cookie-parser";
 import passport from "passport";
+// import seed from "./seeder/seed.js";
 
 //handle uncaught exceptions errors
 process.on("uncaughtException", (error) => {
@@ -32,6 +33,8 @@ const server = app.listen(process.env.PORT, () => {
     `app running on port ${process.env.PORT} in ${process.env.NODE_ENV} mode !`
   );
 });
+
+// seed();
 
 //Handle Unhandled Promise rejection errors
 
