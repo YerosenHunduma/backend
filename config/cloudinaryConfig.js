@@ -20,7 +20,10 @@ const uploadTocloudinary = async (localFilePath) => {
       fs.unlinkSync(localFilePath);
       return {
         message: "success",
-        uploadedFile: result,
+        uploadedFile: {
+          secure_url: result.secure_url,
+          asset_id: result.asset_id,
+        },
       };
     })
     .catch((err) => {
