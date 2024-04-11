@@ -1,6 +1,5 @@
 import { model, Schema, ObjectId } from "mongoose";
 
-
 const brokerSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -59,5 +58,18 @@ const brokerSchema = new Schema(
     timestamps: true,
   }
 );
+
+brokerSchema.methods.subscribe = async function (plan, startDate, endDate) {
+  try {
+    this.subscription.plan = plan || this.subscription.plan;
+    this.subscription.startDate = startDate || this.subscription.startDate;
+    this.subscription.endDate = endDate || this.subscription.endDate;
+
+    await this.save();
+    return { success: true, message: "Subscription updated successfully" };
+  } catch (error) {
+    return { success: false, message: "Failed to update subscription" };
+  }
+};
 
 export default model("Broker", brokerSchema);

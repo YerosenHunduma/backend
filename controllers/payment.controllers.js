@@ -74,21 +74,9 @@ export const chapaWebhook = async (req, res) => {
     } else {
       return res.send("Invalid amount");
     }
-
-    console.log(broker);
-    console.log(broker.subscription);
-    console.log(
-      broker.subscription.plan,
-      broker.subscription.startDate,
-      broker.subscription.endDate
-    );
-    console.log(plan, startDate, endDate);
+    console.log("arg", plan, startDate, endDate);
+    await broker.subscribe(plan, startDate, endDate);
     const paidBy = broker ? broker._id : null;
-    broker.subscription.plan = plan;
-    broker.subscription.startDate = startDate;
-    broker.subscription.endDate = endDate;
-
-    await broker.save();
 
     const payment = new Payment({
       first_name,
