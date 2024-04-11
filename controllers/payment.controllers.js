@@ -54,7 +54,9 @@ export const chapaWebhook = async (req, res) => {
     .createHmac("sha256", secret)
     .update(JSON.stringify(req.body))
     .digest("hex");
-
+  console.log("body", req.body);
+  console.log("chapa hash", req.headers["x-chapa-signature"]);
+  console.log("env hash", hash);
   if (hash == req.headers["x-chapa-signature"]) {
     const broker = await Broker.findOne({ email });
     if (!broker) {
