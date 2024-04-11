@@ -1,29 +1,34 @@
 import { Chapa } from "chapa-nodejs";
 import crypto from "crypto";
 import Payment from "../models/payment.model.js";
-import User from "../models/user.model.js";
-import Subscription from "../models/subscription.js";
+import Broker from "../models/broker.model.js";
 
 const chapa = new Chapa({
   secretKey: process.env.Chapa_Secret_key,
 });
 
 export const PaymentService = async (req, res) => {
-  var tx_ref = await chapa.generateTransactionReference();
-  const { Fname, Lname, email, amount } = req.body;
+  const tx_ref = await chapa.generateTransactionReference();
+
+  const { name, lastName, email, amount } = req.body;
+
+  const parsedAmount = parseInt(amount);
+  if (parsedAmount !== 100 && parsedAmount !== 500 && parsedAmount !== 1000) {
+    return res.json({ success: false, message: "Invalid amount" });
+  }
 
   const data = await chapa.initialize({
-    first_name: Fname,
-    last_name: Lname,
+    first_name: name,
+    last_name: lastName,
     email: email,
     currency: "ETB",
     amount: amount,
     tx_ref: tx_ref,
-    callback_url: "https://example.com/",
+    callback_url: "https://yero-chapa.onrender.com/api/payment/myWebhook,",
     return_url: "https://yerosen.com/",
   });
-  console.log(data);
-  return res.status(200).json(data);
+
+  return res.status(200).json({ success: true, data });
 };
 
 export const chapaWebhook = async (req, res) => {
@@ -37,20 +42,47 @@ export const chapaWebhook = async (req, res) => {
     charge,
     mode,
     type,
+    tx_ref,
     status,
     reference,
-    tx_ref,
     payment_method,
     created_at,
     updated_at,
   } = req.body;
 
-  const paidBy = User.findOne({ email });
   const hash = crypto
     .createHmac("sha256", secret)
     .update(JSON.stringify(req.body))
     .digest("hex");
+
   if (hash == req.headers["x-chapa-signature"]) {
+    const broker = await Broker.findOne({ email });
+    if (!broker) {
+      return res.status(404).send("Broker not found");
+    }
+    let plan = "";
+    let startDate = new Date(created_at);
+    let endDate;
+    if (amount == 100) {
+      plan = "monthly";
+      endDate = new Date(startDate.setMonth(startDate.getMonth() + 1));
+    } else if (amount == 500) {
+      plan = "quarterly";
+      endDate = new Date(startDate.setMonth(startDate.getMonth() + 3));
+    } else if (amount == 1000) {
+      plan = "yearly";
+      endDate = new Date(startDate.setFullYear(startDate.getFullYear() + 1));
+    } else {
+      return res.send("Invalid amount");
+    }
+
+    const paidBy = broker ? broker._id : null;
+    broker.subscription.plan = plan;
+    broker.subscription.startDate = startDate;
+    broker.subscription.endDate = endDate;
+
+    await broker.save();
+
     const payment = new Payment({
       first_name,
       last_name,
@@ -62,6 +94,8 @@ export const chapaWebhook = async (req, res) => {
       type,
       status,
       reference,
+      created_at,
+      updated_at,
       tx_ref,
       payment_method,
       paidBy,
@@ -69,54 +103,4 @@ export const chapaWebhook = async (req, res) => {
     await payment.save();
     return res.send(200);
   }
-};
-
-export const enddate = (req, res) => {
-  const { amount } = req.body;
-  console.log(amount);
-  console.log(Date.now());
-  const startDate = Date.now();
-  console.log(startDate);
-  if (amount == 100) {
-    let sd = new Date(startDate);
-    console.log("uu", sd);
-    let ed = new Date(sd.setMonth(sd.getMonth() + 1));
-    console.log("mm", ed);
-  } else if (amount == 500) {
-    let sd = new Date(startDate);
-    console.log("uu", sd);
-    let ed = new Date(sd.setMonth(sd.getMonth() + 3));
-    console.log("mm", ed);
-  } else if (amount == 1000) {
-    let sd = new Date(startDate);
-    console.log("uu", sd);
-    let ed = new Date(sd.setFullYear(sd.getFullYear() + 1));
-    console.log("mm", ed);
-  }
-};
-
-export const sub = async (req, res) => {
-  const { amount } = req.body;
-  let plan = ""; // Change plan assignment to an empty string
-  let endDate;
-  let sd = new Date(Date.now());
-  if (amount == 100) {
-    plan = "monthly"; // Assign string value directly
-    endDate = new Date(sd.setMonth(sd.getMonth() + 1));
-  } else if (amount == 500) {
-    plan = "quarterly"; // Assign string value directly
-    endDate = new Date(sd.setMonth(sd.getMonth() + 3));
-  } else if (amount == 1000) {
-    plan = "yearly"; // Assign string value directly
-    endDate = new Date(sd.setFullYear(sd.getFullYear() + 1));
-  }
-  const sub = new Subscription({
-    subscription: {
-      plan, // Assign plan directly without wrapping in an array
-      startDate: new Date(Date.now()),
-      endDate,
-    },
-  });
-  await sub.save();
-  return res.status(200).send("Subscription created successfully");
 };

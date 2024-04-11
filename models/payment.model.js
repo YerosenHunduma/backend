@@ -30,6 +30,10 @@ const paymentSchema = new Schema({
     type: String,
     required: true,
   },
+  type: {
+    type: String,
+    required: true,
+  },
   status: {
     type: String,
     required: true,

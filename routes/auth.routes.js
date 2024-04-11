@@ -22,8 +22,8 @@ router.post(
   "/upload-profile",
   uploadImageFromLocalToServer.single("profile"),
   async (req, res) => {
-    console.log(req.file);
-    const result = await uploadTocloudinary(req.file.path);
+    const mainFolderName = "profile";
+    const result = await uploadTocloudinary(req.file.path, mainFolderName);
     res.json(result);
   }
 );
