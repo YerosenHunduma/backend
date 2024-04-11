@@ -60,15 +60,16 @@ const brokerSchema = new Schema(
 );
 
 brokerSchema.methods.subscribe = async function (plan, startDate, endDate) {
-  console.log(plan, startDate, endDate);
   try {
     this.subscription.plan = plan;
     this.subscription.startDate = startDate;
     this.subscription.endDate = endDate;
-    console.log(this);
+
+    await this.save();
 
     return { success: true, message: "Subscription updated successfully" };
   } catch (error) {
+    console.error("Error updating subscription:", error);
     return { success: false, message: "Failed to update subscription" };
   }
 };
