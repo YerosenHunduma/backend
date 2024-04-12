@@ -39,15 +39,12 @@ const brokerSchema = new Schema(
       plan: {
         type: String,
         enum: ["monthly", "quarterly", "yearly"],
-        required: true,
       },
       startDate: {
         type: Date,
-        required: true,
       },
       endDate: {
         type: Date,
-        required: true,
       },
     },
   },

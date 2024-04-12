@@ -13,13 +13,21 @@ export const PaymentService = async (req, res) => {
   const { name, lastName, email, amount } = req.body;
   const broker = await Broker.findOne({ email });
   if (!broker) {
-    return res.status(404).send("Broker not found");
+    return res
+      .status(404)
+      .json({ success: false, message: "Broker not found" });
   }
 
   if (broker.subscription) {
     return res.json({
       success: false,
-      message: "You have already an active subscription",
+      message: "You already have an active subscription",
+    });
+  }
+  if (!broker.isApproved) {
+    return res.json({
+      success: false,
+      message: "Your account is not approved yet",
     });
   }
   const parsedAmount = parseInt(amount);
