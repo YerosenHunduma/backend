@@ -36,21 +36,18 @@ const brokerSchema = new Schema(
       default: true,
     },
     subscription: {
-      type: {
-        plan: {
-          type: String,
-          default: ["monthly"],
-          enum: ["monthly", "quarterly", "yearly"],
-          required: true,
-        },
-        startDate: {
-          type: Date,
-          required: true,
-        },
-        endDate: {
-          type: Date,
-          required: true,
-        },
+      plan: {
+        type: String,
+        enum: ["monthly", "quarterly", "yearly"],
+        required: true,
+      },
+      startDate: {
+        type: Date,
+        required: true,
+      },
+      endDate: {
+        type: Date,
+        required: true,
       },
     },
   },
@@ -67,10 +64,10 @@ brokerSchema.methods.subscribe = async function (plan, startDate, endDate) {
 
     await this.save();
 
-    return { success: true, message: "Subscription updated successfully" };
+    return { success: true, message: "Subscription is successfully" };
   } catch (error) {
-    console.error("Error updating subscription:", error);
-    return { success: false, message: "Failed to update subscription" };
+    console.error("Subscription error:", error);
+    return { success: false, message: "Failed is subscription" };
   }
 };
 

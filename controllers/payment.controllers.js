@@ -15,6 +15,13 @@ export const PaymentService = async (req, res) => {
   if (!broker) {
     return res.status(404).send("Broker not found");
   }
+
+  if (broker.subscription) {
+    return res.json({
+      success: false,
+      message: "You have already an active subscription",
+    });
+  }
   const parsedAmount = parseInt(amount);
   if (parsedAmount !== 100 && parsedAmount !== 500 && parsedAmount !== 1000) {
     return res.json({ success: false, message: "Invalid amount" });
@@ -60,21 +67,23 @@ export const chapaWebhook = async (req, res) => {
   if (hash == req.headers["x-chapa-signature"]) {
     const broker = await Broker.findOne({ email });
     let plan = "";
-    let startDate = new Date(created_at);
+    const startDate = new Date(created_at);
     let endDate;
     if (amount == 100) {
       plan = "monthly";
-      endDate = new Date(startDate.setMonth(startDate.getMonth() + 1));
+      endDate = new Date(startDate.getTime());
+      endDate.setMonth(startDate.getMonth() + 1);
     } else if (amount == 500) {
       plan = "quarterly";
-      endDate = new Date(startDate.setMonth(startDate.getMonth() + 3));
+      endDate = new Date(startDate.getTime());
+      endDate.setMonth(startDate.getMonth() + 1);
     } else if (amount == 1000) {
       plan = "yearly";
-      endDate = new Date(startDate.setFullYear(startDate.getFullYear() + 1));
+      endDate = new Date(startDate.getTime());
+      endDate.setMonth(startDate.getMonth() + 1);
     } else {
       return res.send("Invalid amount");
     }
-    console.log("arg", plan, startDate, endDate);
     await broker.subscribe(plan, startDate, endDate);
     const paidBy = broker ? broker._id : null;
 
@@ -96,6 +105,6 @@ export const chapaWebhook = async (req, res) => {
       paidBy,
     });
     await payment.save();
-    return res.send(200);
+    return res.sendStatus(200);
   }
 };
