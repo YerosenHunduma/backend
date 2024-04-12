@@ -428,7 +428,7 @@ export const getResetPasswordTemplate = (
   </head>
   <body>
     <span class="preheader"
-      >Use this link to reset your password. The link is only valid for 30
+      >Use this link to reset your password. The link is only valid for 10
       minutes.</span
     >
     <table
@@ -481,7 +481,7 @@ export const getResetPasswordTemplate = (
                           You recently requested to reset your password for your
                           AssetMarketSquare account. Use the button below to reset it.
                           <strong
-                            >This password reset is only valid for the next 10
+                            >This password reset is only valid for the next 15
                             minutes.</strong
                           >
                         </p>

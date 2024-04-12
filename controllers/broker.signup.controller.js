@@ -40,3 +40,5 @@ export const SignUpBroker = catchAsyncError(async (req, res, next) => {
     next(error);
   }
 });
+
+export const getAllBroker = catchAsyncError(async (req, res, next) => {});

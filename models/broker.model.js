@@ -47,6 +47,27 @@ const brokerSchema = new Schema(
         type: Date,
       },
     },
+    numOfReviews: {
+      type: Number,
+      default: 0,
+    },
+    reviews: [
+      {
+        user: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        rating: {
+          type: Number,
+          required: true,
+        },
+        comment: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
@@ -68,4 +89,6 @@ brokerSchema.methods.subscribe = async function (plan, startDate, endDate) {
   }
 };
 
-export default model("Broker", brokerSchema);
+const Broker = model("Broker", brokerSchema);
+
+export default Broker;
