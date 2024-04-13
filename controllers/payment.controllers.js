@@ -18,12 +18,12 @@ export const PaymentService = async (req, res) => {
       .json({ success: false, message: "Broker not found" });
   }
 
-  if (broker.subscription) {
-    return res.json({
-      success: false,
-      message: "You already have an active subscription",
-    });
-  }
+  // if (broker.subscription) {
+  //   return res.json({
+  //     success: false,
+  //     message: "You already have an active subscription",
+  //   });
+  // }
   if (!broker.isApproved) {
     return res.json({
       success: false,
