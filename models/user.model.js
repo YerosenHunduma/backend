@@ -1,4 +1,4 @@
-import { model, Schema, ObjectId } from "mongoose";
+import { model, Schema } from "mongoose";
 
 const userSchema = new Schema(
   {
@@ -50,7 +50,7 @@ const userSchema = new Schema(
     },
     favorite: [
       {
-        type: ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "Assets",
       },
     ],
@@ -60,4 +60,6 @@ const userSchema = new Schema(
   }
 );
 
-export default model("User", userSchema);
+const User = model("User", userSchema);
+
+export default User;

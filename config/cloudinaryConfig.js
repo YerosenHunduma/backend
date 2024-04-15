@@ -1,26 +1,8 @@
-import dotenv from "dotenv";
-dotenv.config();
-import { v2 as cloudinary } from "cloudinary";
+import cloudinary from "./cloudinary.js";
 import fs from "fs";
 
-console.log(
-  process.env.cloudinary_cloud_name,
-  process.env.cloudinary_api_key,
-  process.env.cloudinary_api_secret
-);
-
-cloudinary.config({
-  cloud_name: process.env.cloud_name,
-  api_key: process.env.api_key,
-  api_secret: process.env.api_secret,
-});
-
-const uploadTocloudinary = async (localFilePath) => {
-  const mainFolderName = "profile";
-
-  console.log(localFilePath);
-
-  return cloudinary.uploader
+const uploadTocloudinary = async (localFilePath, mainFolderName) => {
+  return await cloudinary.uploader
     .upload(localFilePath, { folder: mainFolderName })
     .then((result) => {
       fs.unlinkSync(localFilePath);
@@ -35,7 +17,7 @@ const uploadTocloudinary = async (localFilePath) => {
     .catch((err) => {
       fs.unlinkSync(localFilePath);
       return {
-        message: "failed to upload",
+        message: err.message,
         error: err.message,
       };
     });

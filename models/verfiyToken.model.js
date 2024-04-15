@@ -1,26 +1,28 @@
-import { model, Schema, ObjectId } from "mongoose";
+import { model, Schema } from "mongoose";
 
 const verifyResetTokenSchema = new Schema({
   _userId: {
     type: Schema.Types.ObjectId,
-    // required: true,
+    required: true,
     refPath: "userType",
   },
   token: {
     type: String,
-    // required: true,
+    required: true,
   },
   createdAt: {
     type: Date,
-    // required: true,
+    required: true,
     default: Date.now,
     expires: 900,
   },
   userType: {
     type: String,
-    // required: true,
+    required: true,
     enum: ["User", "Broker"],
   },
 });
 
-export default model("verificationToken", verifyResetTokenSchema);
+const verificationToken = model("verificationToken", verifyResetTokenSchema);
+
+export default verificationToken;

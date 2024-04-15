@@ -1,5 +1,4 @@
 import { model, Schema, ObjectId } from "mongoose";
-import crypto from "crypto";
 
 const brokerSchema = new Schema(
   {
@@ -37,27 +36,59 @@ const brokerSchema = new Schema(
       default: true,
     },
     subscription: {
-      type: {
-        plan: {
+      plan: {
+        type: String,
+        enum: ["monthly", "quarterly", "yearly"],
+      },
+      startDate: {
+        type: Date,
+      },
+      endDate: {
+        type: Date,
+      },
+    },
+    numOfReviews: {
+      type: Number,
+      default: 0,
+    },
+    reviews: [
+      {
+        user: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        rating: {
+          type: Number,
+          required: true,
+        },
+        comment: {
           type: String,
-          default: ["monthly"],
-          enum: ["monthly", "quarterly", "yearly"],
-          required: true,
-        },
-        startDate: {
-          type: Date,
-          required: true,
-        },
-        endDate: {
-          type: Date,
           required: true,
         },
       },
-    },
+    ],
   },
   {
     timestamps: true,
   }
 );
 
-export default model("Broker", brokerSchema);
+brokerSchema.methods.subscribe = async function (plan, startDate, endDate) {
+  try {
+    this.subscription.plan = plan;
+    this.subscription.startDate = startDate;
+    this.subscription.endDate = endDate;
+
+    await this.save();
+
+    return { success: true, message: "Subscription is successfully" };
+  } catch (error) {
+    console.error("Subscription error:", error);
+    return { success: false, message: "Failed is subscription" };
+  }
+};
+
+const Broker = model("Broker", brokerSchema);
+
+export default Broker;

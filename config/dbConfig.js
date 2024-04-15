@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-mongoose.connect(process.env.Local_Mongo_Url);
+mongoose.connect(process.env.remote_Mongo_uri);
 
 const dbConection = mongoose.connection;
 

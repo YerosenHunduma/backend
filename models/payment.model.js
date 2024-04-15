@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-const Schema = mongoose.Schema;
+import { Schema, model } from "mongoose";
 
 const paymentSchema = new Schema({
   first_name: {
@@ -27,6 +26,10 @@ const paymentSchema = new Schema({
     required: true,
   },
   mode: {
+    type: String,
+    required: true,
+  },
+  type: {
     type: String,
     required: true,
   },
@@ -61,4 +64,6 @@ const paymentSchema = new Schema({
   },
 });
 
-export default mongoose.model("Payment", paymentSchema);
+const Payment = model("Payment", paymentSchema);
+
+export default Payment;
