@@ -31,6 +31,7 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
     address,
     phoneNumber,
     profile,
+    biography,
     profileCloudId,
   } = req.body;
 
@@ -41,6 +42,7 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
     address,
     phoneNumber,
     profile,
+    biography,
     profileCloudId,
   };
   const broker = await Broker.findById(req.userId);

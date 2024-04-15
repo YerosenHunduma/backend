@@ -24,6 +24,7 @@ const userSchema = new Schema(
       unique: true,
       trim: true,
     },
+    biography: { type: String, default: "" },
     password: {
       type: String,
       required: true,

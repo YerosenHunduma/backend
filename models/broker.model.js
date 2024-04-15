@@ -19,7 +19,7 @@ const brokerSchema = new Schema(
       trim: true,
     },
     password: { type: String, required: true, trim: true },
-    boigraphy: { type: String, default: "" },
+    biography: { type: String, default: "" },
     address: { type: String, default: "" },
     phoneNumber: { type: String, default: "" },
     license: { type: String, default: "" },
