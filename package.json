@@ -12,6 +12,7 @@
   "author": "Yerosen Hunduma",
   "license": "ISC",
   "dependencies": {
+    "@faker-js/faker": "^8.4.1",
     "bcryptjs": "^2.4.3",
     "chapa-nodejs": "^1.3.1",
     "cloudinary": "^2.1.0",

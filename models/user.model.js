@@ -38,7 +38,8 @@ const userSchema = new Schema(
       default: "",
     },
 
-    photo: {},
+    profile: { type: String, default: "" },
+    profileCloudId: { type: String, default: "" },
     active: {
       type: Boolean,
       default: true,

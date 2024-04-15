@@ -19,12 +19,13 @@ const brokerSchema = new Schema(
       trim: true,
     },
     password: { type: String, required: true, trim: true },
+    boigraphy: { type: String, default: "" },
     address: { type: String, default: "" },
     phoneNumber: { type: String, default: "" },
     license: { type: String, default: "" },
     licenseCloudId: { type: String },
-    photo: { type: String, default: "" },
-    photoCloudId: { type: String },
+    profile: { type: String, default: "" },
+    profileCloudId: { type: String },
     role: {
       type: [String],
       default: ["Broker"],
@@ -46,6 +47,10 @@ const brokerSchema = new Schema(
       endDate: {
         type: Date,
       },
+    },
+    ratings: {
+      type: Number,
+      default: 0,
     },
     numOfReviews: {
       type: Number,
