@@ -9,7 +9,7 @@ export default (req, res, next) => {
   try {
     jwt.verify(authToken, process.env.jwt_secret_key, (err, decoded) => {
       if (err) {
-        return next(new errorHandler("Authorization invalid", 401));
+        return next(new errorHandler(err.message, 401));
       }
       req.userId = decoded._id;
       next();

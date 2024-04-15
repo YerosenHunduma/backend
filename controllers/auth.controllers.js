@@ -38,7 +38,6 @@ export const SignUp = catchAsyncError(async (req, res, next) => {
 });
 
 export const Signin = catchAsyncError(async (req, res, next) => {
-  console.log(req.body);
   passport.authenticate("local", async (err, user, info) => {
     try {
       if (err || !user) {
@@ -46,7 +45,7 @@ export const Signin = catchAsyncError(async (req, res, next) => {
         return next(new errorHandler(errorMessage, 401));
       }
       const token = jwt.sign({ _id: user._id }, process.env.jwt_secret_key, {
-        expiresIn: "1m",
+        expiresIn: "10m",
       });
       const { password: pass, ...userInfo } = user._doc;
       res
@@ -66,6 +65,46 @@ export const signOut = async (req, res) => {
   });
   res.status(200).json({ success: true, message: "Successfully signed out" });
 };
+
+export const updateProfile = catchAsyncError(async (req, res, next) => {
+  const {
+    name,
+    lastName,
+    email,
+    address,
+    phoneNumber,
+    profile,
+    profileCloudId,
+    role,
+  } = req.body;
+
+  console.log(role == "Buyer");
+  const newUserData = {
+    name,
+    lastName,
+    email,
+    address,
+    phoneNumber,
+    profile,
+    profileCloudId,
+  };
+
+  let user;
+  if (role == "Broker") {
+    user = await Broker.findByIdAndUpdate(req.userId, newUserData, {
+      new: true,
+    });
+  } else {
+    user = await User.findByIdAndUpdate(req.userId, newUserData, {
+      new: true,
+    });
+  }
+  if (!user) {
+    return next(new errorHandler("No user is found", 404));
+  }
+  res.status(200).json(user);
+});
+
 export const forgotPassword = catchAsyncError(async (req, res, next) => {
   const { email } = req.body;
   let userType;

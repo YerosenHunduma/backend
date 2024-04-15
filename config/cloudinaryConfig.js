@@ -1,7 +1,14 @@
 import cloudinary from "./cloudinary.js";
 import fs from "fs";
 
-const uploadTocloudinary = async (localFilePath, mainFolderName) => {
+const uploadTocloudinary = async (
+  localFilePath,
+  mainFolderName,
+  profileCloudId
+) => {
+  if (profileCloudId) {
+    await cloudinary.uploader.destroy(profileCloudId);
+  }
   return await cloudinary.uploader
     .upload(localFilePath, { folder: mainFolderName })
     .then((result) => {
@@ -10,7 +17,7 @@ const uploadTocloudinary = async (localFilePath, mainFolderName) => {
         message: "success",
         uploadedFile: {
           secure_url: result.secure_url,
-          asset_id: result.asset_id,
+          public_id: result.public_id,
         },
       };
     })
