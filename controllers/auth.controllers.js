@@ -74,11 +74,11 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
     address,
     phoneNumber,
     profile,
+    biography,
     profileCloudId,
     role,
   } = req.body;
 
-  console.log(role == "Buyer");
   const newUserData = {
     name,
     lastName,
@@ -86,6 +86,7 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
     address,
     phoneNumber,
     profile,
+    biography,
     profileCloudId,
   };
 

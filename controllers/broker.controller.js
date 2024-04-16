@@ -4,7 +4,7 @@ import apiFilters from "../utils/apiFilters.js";
 import { errorHandler } from "../utils/errorHandler.js";
 
 export const getAllBrokers = catchAsyncError(async (req, res) => {
-  const resPerPage = 6;
+  const resPerPage = 4;
   const apiFilter = new apiFilters(Broker, req.query).search().filters();
 
   let brokers = await apiFilter.query;
@@ -16,40 +16,11 @@ export const getAllBrokers = catchAsyncError(async (req, res) => {
 });
 
 export const getBroker = catchAsyncError(async (req, res) => {
-  const broker = await Broker.findById(req.params.id);
+  const broker = await Broker.findById(req.params.id).populate("reviews.user");
   if (!broker) {
     return next(new errorHandler("broker not found", 404));
   }
   res.status(200).json(broker);
-});
-
-export const updateProfile = catchAsyncError(async (req, res, next) => {
-  const {
-    name,
-    lastName,
-    email,
-    address,
-    phoneNumber,
-    profile,
-    biography,
-    profileCloudId,
-  } = req.body;
-
-  const newBrokerData = {
-    name,
-    lastName,
-    email,
-    address,
-    phoneNumber,
-    profile,
-    biography,
-    profileCloudId,
-  };
-  const broker = await Broker.findById(req.userId);
-  if (!broker) {
-    return next(new errorHandler("broker not found", 404));
-  }
-  res.status(200).json(user);
 });
 
 export const createBrokerReviews = catchAsyncError(async (req, res, next) => {
@@ -93,7 +64,7 @@ export const createBrokerReviews = catchAsyncError(async (req, res, next) => {
 
 export const getAllReviews = catchAsyncError(async (req, res, next) => {
   const brokerId = req.query.id;
-  const broker = await Broker.findById(brokerId);
+  const broker = await Broker.findById(brokerId).populate("reviews.user");
   if (!broker) {
     return next(new errorHandler("broker not found", 404));
   }
