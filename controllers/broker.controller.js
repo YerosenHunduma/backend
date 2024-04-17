@@ -5,8 +5,7 @@ import { errorHandler } from "../utils/errorHandler.js";
 
 export const getAllBrokers = catchAsyncError(async (req, res) => {
   const resPerPage = 4;
-  const apiFilter = new apiFilters(Broker, req.query).search().filters();
-
+  const apiFilter = new apiFilters(Broker, req.query).search().filters().sort();
   let brokers = await apiFilter.query;
   const filteredBrokersCount = brokers.length;
 
@@ -25,6 +24,7 @@ export const getBroker = catchAsyncError(async (req, res) => {
 
 export const createBrokerReviews = catchAsyncError(async (req, res, next) => {
   const { rating, comment, brokerId } = req.body;
+  console.log(req.body);
   const review = {
     user: req.userId,
     rating,
@@ -41,12 +41,11 @@ export const createBrokerReviews = catchAsyncError(async (req, res, next) => {
   const isReviewed = broker?.reviews?.find(
     (review) => review?.user?.toString() === req?.userId?.toString()
   );
-
   if (isReviewed) {
     broker.reviews.forEach((review) => {
       if (review.user.toString() === req.userId.toString()) {
-        review.rating = rating;
-        review.comment = comment;
+        review.rating = rating || broker?.reviews[0]?.rating;
+        review.comment = comment || broker?.reviews[0]?.comment;
       }
     });
   } else {
