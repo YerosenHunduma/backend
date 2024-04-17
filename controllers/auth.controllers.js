@@ -106,11 +106,43 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
   res.status(200).json(user);
 });
 
+export const changePassword = catchAsyncError(async (req, res, next) => {
+  const { oldPassword, newPassword, confirmNewPassword } = req.body;
+  console.log(req.body);
+  const error = validationResult(req);
+  try {
+    if (!error.isEmpty()) {
+      const errorMessage = error.array().map((err) => err.msg);
+      return next(new errorHandler(errorMessage[0], 400));
+    }
+    let existingUser;
+    const existingBroker = await Broker.findById(req.userId);
+    if (!existingBroker) {
+      existingUser = await User.findById(req.userId);
+      if (!existingUser) {
+        return next(
+          new errorHandler("No user is found with this email address", 404)
+        );
+      }
+    }
+    const isMatch = await bcrypt.compare(oldPassword, existingUser.password);
+    if (!isMatch) {
+      return next(new errorHandler("Old password is incorrect", 400));
+    }
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(newPassword, salt);
+    existingUser.password = hashedPassword;
+    await existingUser.save();
+    res.status(200).json("Password updated successfully");
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
 export const forgotPassword = catchAsyncError(async (req, res, next) => {
   const { email } = req.body;
   let userType;
   let existingUser;
-  console.log(email);
   const existingBroker = await Broker.findOne({ email });
   if (!existingBroker) {
     existingUser = await User.findOne({ email });
