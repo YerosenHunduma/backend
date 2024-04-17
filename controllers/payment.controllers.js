@@ -18,13 +18,15 @@ export const PaymentService = async (req, res) => {
       .status(404)
       .json({ success: false, message: "Broker not found" });
   }
-
-  // if (broker.subscription) {
-  //   return res.json({
-  //     success: false,
-  //     message: "You already have an active subscription",
-  //   });
-  // }
+  const subscription = await Subscription.findOne({
+    SubscribedBroker: broker._id,
+  });
+  if (subscription) {
+    return res.json({
+      success: false,
+      message: "You already have an active subscription",
+    });
+  }
   if (!broker.isApproved) {
     return res.json({
       success: false,
