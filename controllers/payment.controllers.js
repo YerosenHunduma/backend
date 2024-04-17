@@ -99,7 +99,7 @@ export const chapaWebhook = async (req, res) => {
         startDate: startDate,
         endDate: endDate,
       },
-      broker: broker._id,
+      SubscribedBroker: broker._id,
     });
 
     await newSubscription.save();
