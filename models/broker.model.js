@@ -36,18 +36,18 @@ const brokerSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    subscription: {
-      plan: {
-        type: String,
-        enum: ["monthly", "quarterly", "yearly"],
-      },
-      startDate: {
-        type: Date,
-      },
-      endDate: {
-        type: Date,
-      },
-    },
+    // subscription: {
+    //   plan: {
+    //     type: String,
+    //     enum: ["monthly", "quarterly", "yearly"],
+    //   },
+    //   startDate: {
+    //     type: Date,
+    //   },
+    //   endDate: {
+    //     type: Date,
+    //   },
+    // },
     ratings: {
       type: Number,
       default: 0,
@@ -79,20 +79,20 @@ const brokerSchema = new Schema(
   }
 );
 
-brokerSchema.methods.subscribe = async function (plan, startDate, endDate) {
-  try {
-    this.subscription.plan = plan;
-    this.subscription.startDate = startDate;
-    this.subscription.endDate = endDate;
+// brokerSchema.methods.subscribe = async function (plan, startDate, endDate) {
+//   try {
+//     this.subscription.plan = plan;
+//     this.subscription.startDate = startDate;
+//     this.subscription.endDate = endDate;
 
-    await this.save();
+//     await this.save();
 
-    return { success: true, message: "Subscription is successfully" };
-  } catch (error) {
-    console.error("Subscription error:", error);
-    return { success: false, message: "Failed is subscription" };
-  }
-};
+//     return { success: true, message: "Subscription is successfully" };
+//   } catch (error) {
+//     console.error("Subscription error:", error);
+//     return { success: false, message: "Failed is subscription" };
+//   }
+// };
 
 const Broker = model("Broker", brokerSchema);
 

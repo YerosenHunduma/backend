@@ -2,6 +2,7 @@ import { Chapa } from "chapa-nodejs";
 import crypto from "crypto";
 import Payment from "../models/payment.model.js";
 import Broker from "../models/broker.model.js";
+import Subscription from "../models/subscription.model.js";
 
 const chapa = new Chapa({
   secretKey: process.env.Chapa_Secret_key,
@@ -92,7 +93,17 @@ export const chapaWebhook = async (req, res) => {
     } else {
       return res.send("Invalid amount");
     }
-    await broker.subscribe(plan, startDate, endDate);
+    const newSubscription = new Subscription({
+      subscription: {
+        plan: plan,
+        startDate: startDate,
+        endDate: endDate,
+      },
+      broker: broker._id,
+    });
+
+    await newSubscription.save();
+
     const paidBy = broker ? broker._id : null;
 
     const payment = new Payment({
