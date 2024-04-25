@@ -34,7 +34,7 @@ const checkFiletype = (file, cb) => {
 
 const uploadImageFromLocalToServer = multer({
   storage,
-  limits: { filesize: 1024 * 1024 },
+  // limits: { filesize: 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     checkFiletype(file, cb);
   },

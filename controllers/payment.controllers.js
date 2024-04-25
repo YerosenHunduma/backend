@@ -3,39 +3,32 @@ import crypto from "crypto";
 import Payment from "../models/payment.model.js";
 import Broker from "../models/broker.model.js";
 import Subscription from "../models/subscription.model.js";
+import { errorHandler } from "../utils/errorHandler.js";
 
 const chapa = new Chapa({
   secretKey: process.env.Chapa_Secret_key,
 });
 
-export const PaymentService = async (req, res) => {
+export const PaymentService = async (req, res, next) => {
   const tx_ref = await chapa.generateTransactionReference();
 
   const { name, lastName, email, amount } = req.body;
   const broker = await Broker.findOne({ email });
   if (!broker) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Broker not found" });
+    return next(errorHandler("Broker not found", 404));
   }
   const subscription = await Subscription.findOne({
     SubscribedBroker: broker._id,
   });
   if (subscription) {
-    return res.json({
-      success: false,
-      message: "You already have an active subscription",
-    });
+    return next(errorHandler("You already have an active subscription", 400));
   }
   if (!broker.isApproved) {
-    return res.json({
-      success: false,
-      message: "Your account is not approved yet",
-    });
+    return next(errorHandler("Your account is not approved yet", 403));
   }
   const parsedAmount = parseInt(amount);
   if (parsedAmount !== 100 && parsedAmount !== 500 && parsedAmount !== 1000) {
-    return res.json({ success: false, message: "Invalid amount" });
+    return next(errorHandler("Invalid amount", 400));
   }
 
   const data = await chapa.initialize({
@@ -93,7 +86,7 @@ export const chapaWebhook = async (req, res) => {
       endDate = new Date(startDate.getTime());
       endDate.setMonth(startDate.getMonth() + 1);
     } else {
-      return res.send("Invalid amount");
+      return next(errorHandler("Invalid amount", 400));
     }
     const newSubscription = new Subscription({
       subscription: {

@@ -26,14 +26,13 @@ router.post(
   async (req, res, next) => {
     const mainFolderName = "profile";
     const userId = req?.userId;
-    console.log(userId);
 
     const result = await uploadTocloudinary(
       req.file.path,
       mainFolderName,
       req.body.profileCloudId
     );
-    console.log(result.uploadedFile.secure_url);
+
     let user;
     user = await User.findById(userId);
     if (!user) {

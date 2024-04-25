@@ -5,7 +5,7 @@ const carSchema = new Schema(
     type: {
       type: String,
       required: true,
-      enum: ["car", "house"],
+      enum: ["Car", "House"],
     },
     title: {
       type: String,
@@ -30,14 +30,40 @@ const carSchema = new Schema(
       required: true,
       enum: ["USD", "ETB", "EUR"],
     },
+    category: String,
+    bodyType: String,
+    priceType: String,
     address: String,
-    make: String,
+    brand: String,
     model: String,
     year: Number,
     mileage: Number,
-    engineSize: Number,
+    engineSize: String,
     fuelType: String,
-    photos: [String],
+    images: [
+      {
+        public_id: {
+          type: String,
+          required: true,
+        },
+        secure_url: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"], // GeoJSON type
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        index: "2dsphere",
+      },
+    },
+    googleMap: {},
     postedBy: {
       type: Schema.Types.ObjectId,
       ref: "Broker",

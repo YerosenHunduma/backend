@@ -5,22 +5,18 @@ const houseSchema = new Schema(
     type: {
       type: String,
       required: true,
-      enum: ["car", "house"],
+      enum: ["Car", "House"],
     },
     title: {
       type: String,
       required: true,
       maxLength: 255,
     },
-    class: {
-      type: String,
-      required: true,
-    },
     description: {
       type: String,
       required: true,
     },
-    pricetype: {
+    priceType: {
       type: String,
       required: true,
       enum: ["Negotiable", "Fixed", "Per_Month", "Per_Year"],
@@ -43,8 +39,19 @@ const houseSchema = new Schema(
     bedrooms: Number,
     bathrooms: Number,
     landSize: String,
-    carPark: Number,
-    photos: [String],
+    parkingSpot: Number,
+    images: [
+      {
+        public_id: {
+          type: String,
+          required: true,
+        },
+        secure_url: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
     location: {
       type: {
         type: String,
@@ -56,6 +63,7 @@ const houseSchema = new Schema(
         index: "2dsphere",
       },
     },
+    googleMap: {},
     postedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

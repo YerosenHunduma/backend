@@ -13,6 +13,7 @@ router.post("/signin", auth.Signin);
 router.post("/signOut", auth.signOut);
 router.post("/signup-broker", registerationValidator, brokerAuth.SignUpBroker);
 router.put("/update-profile", jwtAuthMiddleware, auth.updateProfile);
+router.get("/getMe", jwtAuthMiddleware, auth.getuserProfile);
 router.post("/forgotPassword", auth.forgotPassword);
 router.put(
   "/changePassword",

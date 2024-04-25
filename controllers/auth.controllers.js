@@ -38,6 +38,7 @@ export const SignUp = catchAsyncError(async (req, res, next) => {
 });
 
 export const Signin = catchAsyncError(async (req, res, next) => {
+  console.log(req.body);
   passport.authenticate("local", async (err, user, info) => {
     try {
       if (err || !user) {
@@ -45,7 +46,7 @@ export const Signin = catchAsyncError(async (req, res, next) => {
         return next(new errorHandler(errorMessage, 401));
       }
       const token = jwt.sign({ _id: user._id }, process.env.jwt_secret_key, {
-        expiresIn: "10m",
+        expiresIn: "1h",
       });
       const { password: pass, ...userInfo } = user._doc;
       res
@@ -105,6 +106,21 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
   }
   res.status(200).json(user);
 });
+
+export const getuserProfile = async (req, res, next) => {
+  console.log("hhh");
+  let user;
+  user = await User.findById(req.userId);
+  if (!user) {
+    user = await Broker.findById(req.userId);
+    if (!user) {
+      return next(
+        new errorHandler("No user is found with this email address", 404)
+      );
+    }
+  }
+  res.status(200).json(user);
+};
 
 export const changePassword = catchAsyncError(async (req, res, next) => {
   const { oldPassword, newPassword, confirmNewPassword } = req.body;
