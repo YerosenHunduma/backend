@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import { errorHandler } from "../utils/errorHandler.js";
 dotenv.config();
 export default (err, req, res, next) => {
+  console.log(err);
   let error = {
     message: err?.message || "Internal server error",
     statusCode: err?.statusCode || 500,

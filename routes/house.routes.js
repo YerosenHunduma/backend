@@ -12,4 +12,6 @@ router.post(
   house.postHouse
 );
 
+router.get("/get-houses", house.getHouses);
+
 export default router;

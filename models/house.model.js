@@ -66,7 +66,7 @@ const houseSchema = new Schema(
     googleMap: {},
     postedBy: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Broker",
       required: true,
     },
     sold: {

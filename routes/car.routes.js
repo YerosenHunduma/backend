@@ -12,4 +12,6 @@ router.post(
   car.PostCar
 );
 
+router.get("/get-cars", car.getCars);
+
 export default router;

@@ -32,7 +32,11 @@ const carSchema = new Schema(
     },
     category: String,
     bodyType: String,
-    priceType: String,
+    priceType: {
+      type: String,
+      required: true,
+      enum: ["Negotiable", "Fixed", "Per_Day"],
+    },
     address: String,
     brand: String,
     model: String,
