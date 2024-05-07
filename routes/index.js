@@ -6,12 +6,12 @@ import brokerRoutes from "./broker.routes.js";
 import uploaderRoutes from "./upload.image.routes.js";
 import carRoutes from "./car.routes.js";
 import houseRoutes from "./house.routes.js";
-// import userRoutes from "./user.routes.js";
+import userRoutes from "./user.routes.js";
 
 const router = express.Router();
 
 router.use("/auth", authRoutes);
-// router.use("/user", userRoutes);
+router.use("/user", userRoutes);
 router.use("/payment", paymentRoutes);
 router.use("/broker", brokerRoutes);
 router.use("/upload", uploaderRoutes);

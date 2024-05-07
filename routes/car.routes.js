@@ -13,5 +13,7 @@ router.post(
 );
 
 router.get("/get-cars", car.getCars);
+router.get("/car-detail/:id", car.carDetail);
+router.get("/all-cars", car.getAllCars);
 
 export default router;

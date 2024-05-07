@@ -41,9 +41,11 @@ router.post(
     if (!user) {
       return next(new errorHandler("User not found", 404));
     }
-    user.profile = result.uploadedFile.secure_url;
-    user.profileCloudId = result.uploadedFile.public_id;
+
+    user.profile = result.secure_url;
+    user.profileCloudId = result.public_id;
     await user.save();
+    console.log(user);
     res.status(200).json({ success: true, user });
   }
 );

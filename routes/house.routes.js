@@ -13,5 +13,7 @@ router.post(
 );
 
 router.get("/get-houses", house.getHouses);
+router.get("/house-detail/:id", house.houseDetail);
+router.get("/all-houses", house.getAllHouses);
 
 export default router;

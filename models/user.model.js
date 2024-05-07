@@ -53,7 +53,7 @@ const userSchema = new Schema(
     favorite: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Assets",
+        ref: "Car",
       },
     ],
   },

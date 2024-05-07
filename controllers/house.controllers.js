@@ -49,3 +49,28 @@ export const getHouses = catchAsyncError(async (req, res, next) => {
     .populate("postedBy", "_id name profile role");
   res.status(200).json({ success: true, houses });
 });
+
+export const houseDetail = catchAsyncError(async (req, res, next) => {
+  const house = await House.findById(req.params.id).populate("postedBy");
+
+  if (!house) {
+    return next(new errorHandler("House not found", 404));
+  }
+
+  res.status(200).json({ success: true, house });
+});
+
+//accessed by an admin
+
+export const getAllHouses = catchAsyncError(async (req, res, next) => {
+  const resPerPage = 4;
+  const apiFilter = new apiFilters(House, req.query).search().filters().sort();
+  let houses = await apiFilter.query;
+  const filteredBrokersCount = houses.length;
+  apiFilter.pagination(resPerPage);
+  houses = await apiFilter.query
+    .clone()
+    .select("_id title action price address images currency sold")
+    .populate("postedBy");
+  res.status(200).json({ resPerPage, filteredBrokersCount, houses });
+});

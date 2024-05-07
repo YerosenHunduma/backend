@@ -5,6 +5,7 @@ import Broker from "../models/broker.model.js";
 import { errorHandler } from "../utils/errorHandler.js";
 import uploadTocloudinary from "../config/cloudinaryConfig.js";
 import { geocoder } from "../config/geoCoderConfig.js";
+import apiFilters from "../utils/apiFilters.js";
 
 export const PostCar = catchAsyncError(async (req, res, next) => {
   const { address } = JSON.parse(req.body.jsonData);
@@ -49,4 +50,27 @@ export const getCars = catchAsyncError(async (req, res, next) => {
     .select("_id type title price address images currency")
     .populate("postedBy", "_id name profile role");
   res.status(200).json({ success: true, cars });
+});
+
+export const carDetail = catchAsyncError(async (req, res, next) => {
+  const car = await Car.findById(req.params.id).populate("postedBy");
+  if (!car) {
+    return next(new errorHandler("Car not found", 404));
+  }
+  res.status(200).json({ success: true, car });
+});
+
+//accessed by an admin
+
+export const getAllCars = catchAsyncError(async (req, res, next) => {
+  const resPerPage = 3;
+  const apiFilter = new apiFilters(Car, req.query).search().filters().sort();
+  let car = await apiFilter.query;
+  const filteredBrokersCount = car.length;
+  apiFilter.pagination(resPerPage);
+  car = await apiFilter.query
+    .clone()
+    .select("_id title action price address images currency sold")
+    .populate("postedBy");
+  res.status(200).json({ resPerPage, filteredBrokersCount, car });
 });
