@@ -1,18 +1,37 @@
 import express from "express";
 import * as broker from "../controllers/broker.controller.js";
-import jwtAuthMiddleware from "../middlewares/jwtAuthMiddleware.js";
+import {
+  authorizedRoles,
+  isAuthenticated,
+} from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.get("/getbrokers", broker.getAllBrokers);
 router.get("/getbroker/:id", broker.getBroker);
-router.put("/reviews", jwtAuthMiddleware, broker.createBrokerReviews);
-router.get("/reviews", jwtAuthMiddleware, broker.getAllReviews);
-router.get("/total-assets", jwtAuthMiddleware, broker.TotalAssets);
-router.get("/broker-latest-post", jwtAuthMiddleware, broker.BrokerlatestPosts);
+router.put(
+  "/reviews",
+  isAuthenticated,
+  authorizedRoles("Buyer"),
+  broker.createBrokerReviews
+);
+router.get("/reviews", isAuthenticated, broker.getAllReviews);
+router.get(
+  "/total-assets",
+  isAuthenticated,
+  authorizedRoles("Broker"),
+  broker.TotalAssets
+);
+router.get(
+  "/broker-latest-post",
+  isAuthenticated,
+  authorizedRoles("Broker"),
+  broker.BrokerlatestPosts
+);
 router.get(
   "/broker-post-perMonth",
-  jwtAuthMiddleware,
+  isAuthenticated,
+  authorizedRoles("Broker"),
   broker.broker_post_per_month
 );
 

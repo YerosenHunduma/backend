@@ -38,16 +38,19 @@ export const SignUp = catchAsyncError(async (req, res, next) => {
 });
 
 export const Signin = catchAsyncError(async (req, res, next) => {
-  console.log(req.body);
   passport.authenticate("local", async (err, user, info) => {
     try {
       if (err || !user) {
         const errorMessage = info ? info.message : "Authentication failed";
         return next(new errorHandler(errorMessage, 401));
       }
-      const token = jwt.sign({ _id: user._id }, process.env.jwt_secret_key, {
-        expiresIn: "1h",
-      });
+      const token = jwt.sign(
+        { _id: user._id, role: user.role },
+        process.env.jwt_secret_key,
+        {
+          expiresIn: "1h",
+        }
+      );
       const { password: pass, ...userInfo } = user._doc;
       res
         .cookie("access_token", token, { httpOnly: true })
@@ -107,24 +110,8 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
   res.status(200).json(user);
 });
 
-export const getuserProfile = async (req, res, next) => {
-  console.log("hhh");
-  let user;
-  user = await User.findById(req.userId);
-  if (!user) {
-    user = await Broker.findById(req.userId);
-    if (!user) {
-      return next(
-        new errorHandler("No user is found with this email address", 404)
-      );
-    }
-  }
-  res.status(200).json(user);
-};
-
 export const changePassword = catchAsyncError(async (req, res, next) => {
   const { oldPassword, newPassword, confirmNewPassword } = req.body;
-  console.log(req.body);
   const error = validationResult(req);
   try {
     if (!error.isEmpty()) {
@@ -266,3 +253,17 @@ export const resetPassword = catchAsyncError(async (req, res, next) => {
     next(error);
   }
 });
+
+export const getuserProfile = async (req, res, next) => {
+  let user;
+  user = await User.findById(req.userId);
+  if (!user) {
+    user = await Broker.findById(req.userId);
+    if (!user) {
+      return next(
+        new errorHandler("No user is found with this email address", 404)
+      );
+    }
+  }
+  res.status(200).json(user);
+};

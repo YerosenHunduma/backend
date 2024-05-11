@@ -1,19 +1,28 @@
 import express from "express";
 import * as car from "../controllers/car.controller.js";
 import uploadImageFromLocalToServer from "../helpers/multer.js";
-import jwtAuthMiddleware from "../middlewares/jwtAuthMiddleware.js";
+import {
+  authorizedRoles,
+  isAuthenticated,
+} from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.post(
   "/post-car",
-  jwtAuthMiddleware,
+  isAuthenticated,
+  authorizedRoles("Broker"),
   uploadImageFromLocalToServer.array("file", 10),
   car.PostCar
 );
 
 router.get("/get-cars", car.getCars);
 router.get("/car-detail/:id", car.carDetail);
-router.get("/all-cars", car.getAllCars);
+router.get(
+  "/all-cars",
+  isAuthenticated,
+  authorizedRoles("Admin"),
+  car.getAllCars
+);
 
 export default router;

@@ -1,7 +1,7 @@
 import House from "../models/house.model.js";
 import catchAsyncError from "../middlewares/catchAsyncError.js";
 import Broker from "../models/broker.model.js";
-import apiFilters from "../utils/apiFilters.js";
+import assetApiFilters from "../utils/assetApiFilters.js";
 import { errorHandler } from "../utils/errorHandler.js";
 import uploadTocloudinary from "../config/cloudinaryConfig.js";
 import { geocoder } from "../config/geoCoderConfig.js";
@@ -44,10 +44,21 @@ export const postHouse = catchAsyncError(async (req, res, next) => {
 });
 
 export const getHouses = catchAsyncError(async (req, res, next) => {
-  const houses = await House.find({})
+  console.log(req.query);
+  const resPerPage = 4;
+  const apiFilter = new assetApiFilters(House, req.query)
+    .search()
+    .filters()
+    .sort(req.query.sortedBy);
+  let houses = await apiFilter.query;
+  const filteredHouseCount = houses.length;
+  apiFilter.pagination(resPerPage);
+  houses = await apiFilter.query
+    .clone()
     .select("_id type title price address images currency")
     .populate("postedBy", "_id name profile role");
-  res.status(200).json({ success: true, houses });
+  console.log("first order", houses);
+  res.status(200).json({ resPerPage, filteredHouseCount, houses });
 });
 
 export const houseDetail = catchAsyncError(async (req, res, next) => {
@@ -64,7 +75,10 @@ export const houseDetail = catchAsyncError(async (req, res, next) => {
 
 export const getAllHouses = catchAsyncError(async (req, res, next) => {
   const resPerPage = 4;
-  const apiFilter = new apiFilters(House, req.query).search().filters().sort();
+  const apiFilter = new assetApiFilters(House, req.query)
+    .search()
+    .filters()
+    .sort();
   let houses = await apiFilter.query;
   const filteredBrokersCount = houses.length;
   apiFilter.pagination(resPerPage);

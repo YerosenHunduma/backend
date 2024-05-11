@@ -38,7 +38,7 @@ const houseSchema = new Schema(
     address: String,
     bedrooms: Number,
     bathrooms: Number,
-    landSize: String,
+    landSize: Number,
     parkingSpot: Number,
     images: [
       {

@@ -1,7 +1,7 @@
 import express from "express";
 import uploadImageFromLocalToServer from "../helpers/multer.js";
 import uploadTocloudinary from "../config/cloudinaryConfig.js";
-import jwtAuthMiddleware from "../middlewares/jwtAuthMiddleware.js";
+import { isAuthenticated } from "../middlewares/authMiddleware.js";
 import Broker from "../models/broker.model.js";
 import User from "../models/user.model.js";
 import { errorHandler } from "../utils/errorHandler.js";
@@ -21,7 +21,7 @@ router.post(
 
 router.post(
   "/upload-profile",
-  jwtAuthMiddleware,
+  isAuthenticated,
   uploadImageFromLocalToServer.single("profile"),
   async (req, res, next) => {
     const mainFolderName = "profile";

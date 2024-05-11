@@ -4,6 +4,7 @@ import Payment from "../models/payment.model.js";
 import Broker from "../models/broker.model.js";
 import Subscription from "../models/subscription.model.js";
 import { errorHandler } from "../utils/errorHandler.js";
+import catchAsyncError from "../middlewares/catchAsyncError.js";
 
 const chapa = new Chapa({
   secretKey: process.env.Chapa_Secret_key,
@@ -122,3 +123,36 @@ export const chapaWebhook = async (req, res) => {
     return res.sendStatus(200);
   }
 };
+
+export const mySubscription = catchAsyncError(async (req, res, next) => {
+  try {
+    const broker = await Broker.findById(req.userId);
+    if (!broker) {
+      return next(new errorHandler("Broker not found", 404));
+    }
+
+    const subscription = await Subscription.findOne({
+      SubscribedBroker: broker._id,
+    });
+
+    if (!subscription) {
+      const Active_subscription = false;
+      return res.status(200).json({ Active_subscription });
+    }
+
+    const currentDate = new Date();
+
+    if (
+      subscription?.subscription.endDate &&
+      subscription?.subscription.endDate < currentDate
+    ) {
+      const Active_subscription = false;
+      return res.status(200).json({ Active_subscription });
+    }
+
+    const Active_subscription = true;
+    return res.status(200).json({ Active_subscription });
+  } catch (error) {
+    next(error);
+  }
+});

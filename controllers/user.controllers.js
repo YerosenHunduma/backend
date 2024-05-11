@@ -163,7 +163,6 @@ export const addToWishlist = catchAsyncError(async (req, res, next) => {
       { new: true }
     );
     const { password, ...userInfo } = user._doc;
-    console.log("l", userInfo);
     res.status(200).json({ success: true, userInfo });
   } catch (error) {
     next(error);
