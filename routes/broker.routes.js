@@ -35,4 +35,18 @@ router.get(
   broker.broker_post_per_month
 );
 
+router.get(
+  "/my-cars",
+  isAuthenticated,
+  authorizedRoles("Broker"),
+  broker.brokerCars
+);
+
+router.get(
+  "/my-houses",
+  isAuthenticated,
+  authorizedRoles("Broker"),
+  broker.brokerHouses
+);
+
 export default router;

@@ -5,31 +5,34 @@ import Broker from "../models/broker.model.js";
 import Subscription from "../models/subscription.model.js";
 import { errorHandler } from "../utils/errorHandler.js";
 import catchAsyncError from "../middlewares/catchAsyncError.js";
+import apiFilters from "../utils/apiFilters.js";
 
 const chapa = new Chapa({
   secretKey: process.env.Chapa_Secret_key,
 });
 
-export const PaymentService = async (req, res, next) => {
+export const PaymentService = catchAsyncError(async (req, res, next) => {
   const tx_ref = await chapa.generateTransactionReference();
 
   const { name, lastName, email, amount } = req.body;
   const broker = await Broker.findOne({ email });
   if (!broker) {
-    return next(errorHandler("Broker not found", 404));
+    return next(new errorHandler("Broker not found", 404));
   }
   const subscription = await Subscription.findOne({
     SubscribedBroker: broker._id,
   });
   if (subscription) {
-    return next(errorHandler("You already have an active subscription", 400));
+    return next(
+      new errorHandler("You already have an active subscription", 400)
+    );
   }
   if (!broker.isApproved) {
-    return next(errorHandler("Your account is not approved yet", 403));
+    return next(new errorHandler("Your account is not approved yet", 403));
   }
   const parsedAmount = parseInt(amount);
   if (parsedAmount !== 100 && parsedAmount !== 500 && parsedAmount !== 1000) {
-    return next(errorHandler("Invalid amount", 400));
+    return next(new errorHandler("Invalid amount", 400));
   }
 
   const data = await chapa.initialize({
@@ -44,9 +47,9 @@ export const PaymentService = async (req, res, next) => {
   });
 
   return res.status(200).json({ success: true, data });
-};
+});
 
-export const chapaWebhook = async (req, res) => {
+export const chapaWebhook = catchAsyncError(async (req, res) => {
   const secret = process.env.webhook_secret_key;
   const {
     first_name,
@@ -122,9 +125,9 @@ export const chapaWebhook = async (req, res) => {
     await payment.save();
     return res.sendStatus(200);
   }
-};
+});
 
-export const mySubscription = catchAsyncError(async (req, res, next) => {
+export const SubscriptionChecker = catchAsyncError(async (req, res, next) => {
   try {
     const broker = await Broker.findById(req.userId);
     if (!broker) {
@@ -152,6 +155,41 @@ export const mySubscription = catchAsyncError(async (req, res, next) => {
 
     const Active_subscription = true;
     return res.status(200).json({ Active_subscription });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const mysubscription = catchAsyncError(async (req, res, next) => {
+  const broker = await Broker.findById(req.userId);
+  if (!broker) {
+    return next(new errorHandler("Broker not found", 404));
+  }
+  try {
+    const subscription = await Subscription.findOne({
+      SubscribedBroker: broker._id,
+    });
+
+    return res.status(200).json({ subscription });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const transactions = catchAsyncError(async (req, res, next) => {
+  const resPerPage = 7;
+  const sort = "-created_at";
+  try {
+    const apiFilter = new apiFilters(Payment, req.query)
+      .search()
+      .filters()
+      .sort(sort);
+
+    let transaction = await apiFilter.query;
+    const filteredTransactionCount = transaction.length;
+    apiFilter.pagination(resPerPage);
+    transaction = await apiFilter.query.clone();
+    res.status(200).json({ filteredTransactionCount, resPerPage, transaction });
   } catch (error) {
     next(error);
   }

@@ -56,7 +56,7 @@ export const getCars = catchAsyncError(async (req, res, next) => {
   apiFilter.pagination(resPerPage);
   cars = await apiFilter.query
     .clone()
-    .select("_id type title price address images currency")
+    .select("_id type title price address images currency createdAt")
     .populate("postedBy", "_id name profile role");
   res.status(200).json({ resPerPage, filteredCarsCount, cars });
 });

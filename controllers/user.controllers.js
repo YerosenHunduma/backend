@@ -7,6 +7,8 @@ import House from "../models/house.model.js";
 import Broker from "../models/broker.model.js";
 import apiFilters from "../utils/apiFilters.js";
 import mongoose from "mongoose";
+import { notifyBrokerTemplate } from "../utils/notifyBrokerTemplate.js";
+import sendEmail from "../utils/sendEmail.js";
 
 export const postBlog = catchAsyncError(async (req, res, next) => {
   const { title, description } = req.body;
@@ -55,13 +57,13 @@ export const TotalAsset = catchAsyncError(async (req, res, next) => {
 
 export const latestAssets = catchAsyncError(async (req, res, next) => {
   const latestCars = await Car.find()
-    .select("_id type title price address images currency")
+    .select("_id type title price address images currency createdAt")
     .populate("postedBy", "_id name profile role")
     .populate("postedBy")
     .sort({ createdAt: -1 })
     .limit(5);
   const latestHouses = await House.find()
-    .select("_id type title price address images currency")
+    .select("_id type title price address images currency createdAt")
     .populate("postedBy", "_id name profile role")
     .populate("postedBy")
     .sort({ createdAt: -1 })
@@ -84,12 +86,29 @@ export const latestAssets = catchAsyncError(async (req, res, next) => {
   });
 });
 
+export const adminGetAllUnApprovedBrokers = catchAsyncError(
+  async (req, res, next) => {
+    const resPerPage = 5;
+    const sort = "-createdAt";
+    const apiFilter = new apiFilters(Broker, req.query)
+      .search()
+      .UnApprovedbrokerfilter()
+      .sort(sort);
+    let broker = await apiFilter.query;
+    const filteredBrokersCount = broker.length;
+    apiFilter.pagination(resPerPage);
+    broker = await apiFilter.query.clone();
+
+    res.status(200).json({ resPerPage, filteredBrokersCount, broker });
+  }
+);
+
 export const adminGetAllbrokers = catchAsyncError(async (req, res, next) => {
   const resPerPage = 5;
   const sort = "-createdAt";
   const apiFilter = new apiFilters(Broker, req.query)
     .search()
-    .UnApprovedbrokerfilter()
+    .filters()
     .sort(sort);
   let broker = await apiFilter.query;
   const filteredBrokersCount = broker.length;
@@ -97,6 +116,100 @@ export const adminGetAllbrokers = catchAsyncError(async (req, res, next) => {
   broker = await apiFilter.query.clone();
 
   res.status(200).json({ resPerPage, filteredBrokersCount, broker });
+});
+
+export const adminGetAllusers = catchAsyncError(async (req, res, next) => {
+  const resPerPage = 5;
+  const sort = "-createdAt";
+  const apiFilter = new apiFilters(User, req.query)
+    .search()
+    .filters()
+    .sort(sort);
+  let user = await apiFilter.query;
+  const filteredBrokersCount = user.length;
+  apiFilter.pagination(resPerPage);
+  user = await apiFilter.query.clone();
+
+  res.status(200).json({ resPerPage, filteredBrokersCount, user });
+});
+
+export const approveBroker = catchAsyncError(async (req, res, next) => {
+  const { id } = req.body;
+  try {
+    const broker = await Broker.findById(id);
+    if (!broker) {
+      return next(new errorHandler("Broker not found", 404));
+    }
+    broker.isApproved = true;
+    await broker.save();
+    res.status(200).json({ success: true, broker });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const DeavtivateBrokers = catchAsyncError(async (req, res, next) => {
+  const { id } = req.body;
+
+  try {
+    const broker = await Broker.findById(id);
+    if (!broker) {
+      return next(new errorHandler("Broker not found", 404));
+    }
+    broker.active = false;
+    await broker.save();
+    res.status(200).json({ success: true, broker });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const avtivateBrokers = catchAsyncError(async (req, res, next) => {
+  const { id } = req.body;
+
+  try {
+    const broker = await Broker.findById(id);
+    if (!broker) {
+      return next(new errorHandler("Broker not found", 404));
+    }
+    broker.active = true;
+    await broker.save();
+    res.status(200).json({ success: true, broker });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const DeavtivateUsers = catchAsyncError(async (req, res, next) => {
+  const { id } = req.body;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return next(new errorHandler("Broker not found", 404));
+    }
+    user.active = false;
+    await user.save();
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const avtivateUsers = catchAsyncError(async (req, res, next) => {
+  const { id } = req.body;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return next(new errorHandler("Broker not found", 404));
+    }
+    user.active = true;
+    await user.save();
+    res.status(200).json({ success: true, broker });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export const asset_per_month = catchAsyncError(async (req, res, next) => {
@@ -323,6 +436,108 @@ export const getUserWishlists = catchAsyncError(async (req, res, next) => {
     ]);
 
     res.status(200).json({ success: true, wishlists: blogsWithAuthors[0] });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const latest = catchAsyncError(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+
+  const skip = (page - 1) * limit;
+
+  const latestAssets = await Promise.all([
+    Car.aggregate([
+      {
+        $project: {
+          _id: 1,
+          type: 1,
+          title: 1,
+          price: 1,
+          address: 1,
+          images: 1,
+          currency: 1,
+          postedBy: 1,
+          createdAt: 1,
+          assetType: { $literal: "car" },
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      { $limit: limit },
+    ]),
+    House.aggregate([
+      {
+        $project: {
+          _id: 1,
+          type: 1,
+          title: 1,
+          price: 1,
+          address: 1,
+          images: 1,
+          currency: 1,
+          postedBy: 1,
+          createdAt: 1,
+          assetType: { $literal: "house" },
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      { $limit: limit },
+    ]),
+  ]);
+  console.log(latestAssets);
+
+  let combinedLatestAssets = latestAssets[0].concat(latestAssets[1]);
+
+  combinedLatestAssets.sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
+  const paginatedAssets = combinedLatestAssets.slice(skip, skip + limit);
+
+  const totalAssetsCount = combinedLatestAssets.length;
+  const totalPages = Math.ceil(totalAssetsCount / limit);
+
+  res.status(200).json({
+    success: true,
+    page,
+    limit,
+    totalAssetsCount,
+    totalPages,
+    latestAssets: paginatedAssets,
+  });
+});
+
+export const notifyBroker = catchAsyncError(async (req, res, next) => {
+  const { email, message } = req.body;
+
+  let existingUser;
+  const existingBroker = await Broker.findOne({ email });
+  if (!existingBroker) {
+    existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return next(
+        new errorHandler("No user is found with this email address", 404)
+      );
+    }
+  }
+
+  try {
+    if (existingBroker || existingUser) {
+      const msg = notifyBrokerTemplate(
+        existingBroker ? existingBroker.name : existingUser.name,
+        message
+      );
+      await sendEmail({
+        email: existingBroker ? existingBroker.email : existingUser.email,
+        subject: "AssetMarketSquare Password Reset",
+        msg,
+      });
+      res.status(200).json({
+        success: true,
+        message: `Email has been sent to ${existingBroker ? existingBroker.email : existingUser.email}`,
+      });
+    }
   } catch (error) {
     next(error);
   }

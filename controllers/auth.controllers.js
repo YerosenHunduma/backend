@@ -207,8 +207,6 @@ export const forgotPassword = catchAsyncError(async (req, res, next) => {
 
 export const resetPassword = catchAsyncError(async (req, res, next) => {
   const { token, userId } = req.params;
-  console.log(req.body);
-  console.log(req.params);
 
   const passwordResetToken = await verfiyTokenModel.findOne({
     _userId: userId,

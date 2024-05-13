@@ -174,3 +174,42 @@ export const broker_post_per_month = catchAsyncError(async (req, res, next) => {
     next(error);
   }
 });
+
+export const brokerCars = catchAsyncError(async (req, res, next) => {
+  try {
+    const brokerId = req.userId;
+    const cars = await Car.find({ postedBy: brokerId })
+      .select("_id type title price address images currency")
+      .populate("postedBy", "_id name profile role");
+    console.log(cars);
+    res.status(200).json(cars);
+  } catch (error) {
+    next(error);
+  }
+
+  // const resPerPage = 5;
+  // const sort = "-createdAt";
+  // const apiFilter = new apiFilters(Car, req.userId)
+  //   .search()
+  //   .filters()
+  //   .sort(sort);
+  // let cars = await apiFilter.query;
+  // const filteredCarsCount = cars.length;
+  // apiFilter.pagination(resPerPage);
+  // cars = await apiFilter.query.clone();
+
+  // res.status(200).json({ resPerPage, filteredCarsCount, cars });
+});
+
+export const brokerHouses = catchAsyncError(async (req, res, next) => {
+  try {
+    const brokerId = req.userId;
+    const houses = await House.find({ postedBy: brokerId })
+      .select("_id type title price address images currency")
+      .populate("postedBy", "_id name profile role");
+    console.log(houses);
+    res.status(200).json(houses);
+  } catch (error) {
+    next(error);
+  }
+});
