@@ -8,7 +8,7 @@ import {
 const router = express.Router();
 
 router.post("/pay", isAuthenticated, payment.PaymentService);
-router.post("/webhook", isAuthenticated, payment.chapaWebhook);
+router.post("/webhook", payment.chapaWebhook);
 router.get("/get-mysubscription", isAuthenticated, payment.SubscriptionChecker);
 router.get("/my-subscription", isAuthenticated, payment.mysubscription);
 router.get(
