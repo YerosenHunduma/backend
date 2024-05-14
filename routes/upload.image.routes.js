@@ -15,6 +15,7 @@ router.post(
     console.log(req.file);
     const mainFolderName = "license";
     const result = await uploadTocloudinary(req.file.path, mainFolderName);
+    console.log(result);
     res.json(result);
   }
 );

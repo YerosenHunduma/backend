@@ -269,13 +269,25 @@ export const asset_per_month = catchAsyncError(async (req, res, next) => {
 
 export const addToWishlist = catchAsyncError(async (req, res, next) => {
   const userId = req.userId;
+  const collection = req.role[0] === "Admin" ? "User" : req.role[0];
   try {
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { $addToSet: { favorite: req.body.assetId } },
-      { new: true }
-    );
-    const { password, ...userInfo } = user._doc;
+    let user;
+    if (collection === "User") {
+      user = await User.findByIdAndUpdate(
+        userId,
+        { $addToSet: { favorite: req.body.assetId } },
+        { new: true }
+      );
+    } else if (collection === "Broker") {
+      user = await Broker.findByIdAndUpdate(
+        userId,
+        { $addToSet: { favorite: req.body.assetId } },
+        { new: true }
+      );
+    } else {
+      return new errorHandler("User is not found", 404);
+    }
+    const { password, ...userInfo } = user?._doc;
     res.status(200).json({ success: true, userInfo });
   } catch (error) {
     next(error);
@@ -284,14 +296,25 @@ export const addToWishlist = catchAsyncError(async (req, res, next) => {
 
 export const RemoveFromWishlist = catchAsyncError(async (req, res, next) => {
   const userId = req.userId;
+  const collection = req.role[0] === "Admin" ? "User" : req.role[0];
   try {
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { $pull: { favorite: req.params.assetId } },
-      { new: true }
-    );
+    let user;
+    if (collection === "User") {
+      user = await User.findByIdAndUpdate(
+        userId,
+        { $pull: { favorite: req.params.assetId } },
+        { new: true }
+      );
+    } else if (collection === "Broker") {
+      user = await Broker.findByIdAndUpdate(
+        userId,
+        { $pull: { favorite: req.params.assetId } },
+        { new: true }
+      );
+    } else {
+      return new errorHandler("User is not found", 404);
+    }
     const { password, ...userInfo } = user._doc;
-    console.log("d", userInfo);
     res.status(200).json({ success: true, userInfo });
   } catch (error) {
     next(error);

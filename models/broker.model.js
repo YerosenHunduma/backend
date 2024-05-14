@@ -61,6 +61,12 @@ const brokerSchema = new Schema(
         },
       },
     ],
+    favorite: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Car",
+      },
+    ],
   },
   {
     timestamps: true,
