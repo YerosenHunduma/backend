@@ -325,140 +325,281 @@ export const RemoveFromWishlist = catchAsyncError(async (req, res, next) => {
 export const getUserWishlists = catchAsyncError(async (req, res, next) => {
   try {
     const userId = req.userId;
+    const collection = req.role[0] === "Admin" ? "User" : req.role[0];
+    let blogsWithAuthors;
+    if (collection === "User") {
+      blogsWithAuthors = await User.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(userId),
+          },
+        },
+        {
+          $lookup: {
+            from: "cars",
+            localField: "favorite",
+            foreignField: "_id",
+            as: "cars",
+          },
+        },
+        {
+          $lookup: {
+            from: "houses",
+            localField: "favorite",
+            foreignField: "_id",
+            as: "houses",
+          },
+        },
+        {
+          $lookup: {
+            from: "brokers",
+            let: { carBrokerIds: "$cars.postedBy" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$carBrokerIds"] },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  name: 1,
+                  address: 1,
+                  phoneNumber: 1,
+                  profile: 1,
+                },
+              },
+            ],
+            as: "carBrokers",
+          },
+        },
+        {
+          $lookup: {
+            from: "brokers",
+            let: { houseBrokerIds: "$houses.postedBy" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$houseBrokerIds"] },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  name: 1,
+                  address: 1,
+                  phoneNumber: 1,
+                  profile: 1,
+                },
+              },
+            ],
+            as: "houseBrokers",
+          },
+        },
+        {
+          $project: {
+            cars: {
+              $map: {
+                input: "$cars",
+                as: "car",
+                in: {
+                  _id: "$$car._id",
+                  images: "$$car.images",
+                  landSize: "$$car.brand",
+                  model: "$$car.model",
+                  year: "$$car.year",
+                  currency: "$$car.currency",
+                  price: "$$car.price",
+                  priceType: "$$car.priceType",
+                  address: "$$car.address",
+                  action: "$$car.action",
+                  category: "$$car.category",
+                  bodyType: "$$car.bodyType",
+                  engineSize: "$$car.engineSize",
+                  type: "$$car.type",
+                  title: "$$car.title",
 
-    const blogsWithAuthors = await User.aggregate([
-      {
-        $match: {
-          _id: new mongoose.Types.ObjectId(userId),
-        },
-      },
-      {
-        $lookup: {
-          from: "cars",
-          localField: "favorite",
-          foreignField: "_id",
-          as: "cars",
-        },
-      },
-      {
-        $lookup: {
-          from: "houses",
-          localField: "favorite",
-          foreignField: "_id",
-          as: "houses",
-        },
-      },
-      {
-        $lookup: {
-          from: "brokers",
-          let: { carBrokerIds: "$cars.postedBy" },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $in: ["$_id", "$$carBrokerIds"] },
+                  postedBy: {
+                    $arrayElemAt: [
+                      "$carBrokers",
+                      { $indexOfArray: ["$carBrokers._id", "$$car.postedBy"] },
+                    ],
+                  },
+                },
               },
             },
-            {
-              $project: {
-                _id: 1,
-                name: 1,
-                address: 1,
-                phoneNumber: 1,
-                profile: 1,
-              },
-            },
-          ],
-          as: "carBrokers",
-        },
-      },
-      {
-        $lookup: {
-          from: "brokers",
-          let: { houseBrokerIds: "$houses.postedBy" },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $in: ["$_id", "$$houseBrokerIds"] },
-              },
-            },
-            {
-              $project: {
-                _id: 1,
-                name: 1,
-                address: 1,
-                phoneNumber: 1,
-                profile: 1,
-              },
-            },
-          ],
-          as: "houseBrokers",
-        },
-      },
-      {
-        $project: {
-          cars: {
-            $map: {
-              input: "$cars",
-              as: "car",
-              in: {
-                _id: "$$car._id",
-                images: "$$car.images",
-                landSize: "$$car.brand",
-                model: "$$car.model",
-                year: "$$car.year",
-                currency: "$$car.currency",
-                price: "$$car.price",
-                priceType: "$$car.priceType",
-                address: "$$car.address",
-                action: "$$car.action",
-                category: "$$car.category",
-                bodyType: "$$car.bodyType",
-                engineSize: "$$car.engineSize",
-                type: "$$car.type",
-                title: "$$car.title",
-
-                postedBy: {
-                  $arrayElemAt: [
-                    "$carBrokers",
-                    { $indexOfArray: ["$carBrokers._id", "$$car.postedBy"] },
-                  ],
+            houses: {
+              $map: {
+                input: "$houses",
+                as: "house",
+                in: {
+                  _id: "$$house._id",
+                  images: "$$house.images",
+                  landSize: "$$house.landSize",
+                  bedrooms: "$$house.bedrooms",
+                  bathrooms: "$$house.bathrooms",
+                  currency: "$$house.currency",
+                  price: "$$house.price",
+                  priceType: "$$house.priceType",
+                  address: "$$house.address",
+                  action: "$$house.action",
+                  parkingSpot: "$$house.parkingSpot",
+                  type: "$$house.type",
+                  title: "$$house.title",
+                  postedBy: {
+                    $arrayElemAt: [
+                      "$houseBrokers",
+                      {
+                        $indexOfArray: [
+                          "$houseBrokers._id",
+                          "$$house.postedBy",
+                        ],
+                      },
+                    ],
+                  },
                 },
               },
             },
           },
-          houses: {
-            $map: {
-              input: "$houses",
-              as: "house",
-              in: {
-                _id: "$$house._id",
-                images: "$$house.images",
-                landSize: "$$house.landSize",
-                bedrooms: "$$house.bedrooms",
-                bathrooms: "$$house.bathrooms",
-                currency: "$$house.currency",
-                price: "$$house.price",
-                priceType: "$$house.priceType",
-                address: "$$house.address",
-                action: "$$house.action",
-                parkingSpot: "$$house.parkingSpot",
-                type: "$$house.type",
-                title: "$$house.title",
-                postedBy: {
-                  $arrayElemAt: [
-                    "$houseBrokers",
-                    {
-                      $indexOfArray: ["$houseBrokers._id", "$$house.postedBy"],
-                    },
-                  ],
+        },
+      ]);
+    } else if (collection === "Broker") {
+      blogsWithAuthors = await Broker.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(userId),
+          },
+        },
+        {
+          $lookup: {
+            from: "cars",
+            localField: "favorite",
+            foreignField: "_id",
+            as: "cars",
+          },
+        },
+        {
+          $lookup: {
+            from: "houses",
+            localField: "favorite",
+            foreignField: "_id",
+            as: "houses",
+          },
+        },
+        {
+          $lookup: {
+            from: "brokers",
+            let: { carBrokerIds: "$cars.postedBy" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$carBrokerIds"] },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  name: 1,
+                  address: 1,
+                  phoneNumber: 1,
+                  profile: 1,
+                },
+              },
+            ],
+            as: "carBrokers",
+          },
+        },
+        {
+          $lookup: {
+            from: "brokers",
+            let: { houseBrokerIds: "$houses.postedBy" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $in: ["$_id", "$$houseBrokerIds"] },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  name: 1,
+                  address: 1,
+                  phoneNumber: 1,
+                  profile: 1,
+                },
+              },
+            ],
+            as: "houseBrokers",
+          },
+        },
+        {
+          $project: {
+            cars: {
+              $map: {
+                input: "$cars",
+                as: "car",
+                in: {
+                  _id: "$$car._id",
+                  images: "$$car.images",
+                  landSize: "$$car.brand",
+                  model: "$$car.model",
+                  year: "$$car.year",
+                  currency: "$$car.currency",
+                  price: "$$car.price",
+                  priceType: "$$car.priceType",
+                  address: "$$car.address",
+                  action: "$$car.action",
+                  category: "$$car.category",
+                  bodyType: "$$car.bodyType",
+                  engineSize: "$$car.engineSize",
+                  type: "$$car.type",
+                  title: "$$car.title",
+
+                  postedBy: {
+                    $arrayElemAt: [
+                      "$carBrokers",
+                      { $indexOfArray: ["$carBrokers._id", "$$car.postedBy"] },
+                    ],
+                  },
+                },
+              },
+            },
+            houses: {
+              $map: {
+                input: "$houses",
+                as: "house",
+                in: {
+                  _id: "$$house._id",
+                  images: "$$house.images",
+                  landSize: "$$house.landSize",
+                  bedrooms: "$$house.bedrooms",
+                  bathrooms: "$$house.bathrooms",
+                  currency: "$$house.currency",
+                  price: "$$house.price",
+                  priceType: "$$house.priceType",
+                  address: "$$house.address",
+                  action: "$$house.action",
+                  parkingSpot: "$$house.parkingSpot",
+                  type: "$$house.type",
+                  title: "$$house.title",
+                  postedBy: {
+                    $arrayElemAt: [
+                      "$houseBrokers",
+                      {
+                        $indexOfArray: [
+                          "$houseBrokers._id",
+                          "$$house.postedBy",
+                        ],
+                      },
+                    ],
+                  },
                 },
               },
             },
           },
         },
-      },
-    ]);
-    console.log(blogsWithAuthors[0]);
+      ]);
+    }
     res.status(200).json({ success: true, wishlists: blogsWithAuthors[0] });
   } catch (error) {
     next(error);
