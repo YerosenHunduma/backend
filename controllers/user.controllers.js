@@ -9,6 +9,7 @@ import apiFilters from "../utils/apiFilters.js";
 import mongoose from "mongoose";
 import { notifyBrokerTemplate } from "../utils/notifyBrokerTemplate.js";
 import sendEmail from "../utils/sendEmail.js";
+import ContactUs from "../models/contactUs.js";
 
 export const postBlog = catchAsyncError(async (req, res, next) => {
   const { title, description } = req.body;
@@ -457,7 +458,7 @@ export const getUserWishlists = catchAsyncError(async (req, res, next) => {
         },
       },
     ]);
-
+    console.log(blogsWithAuthors[0]);
     res.status(200).json({ success: true, wishlists: blogsWithAuthors[0] });
   } catch (error) {
     next(error);
@@ -561,6 +562,23 @@ export const notifyBroker = catchAsyncError(async (req, res, next) => {
         message: `Email has been sent to ${existingBroker ? existingBroker.email : existingUser.email}`,
       });
     }
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const Contact = catchAsyncError(async (req, res, next) => {
+  const { name, email, message } = req.body;
+  try {
+    await new ContactUs({
+      name,
+      email,
+      message,
+    }).save();
+    res.status(200).json({
+      success: true,
+      message: "Your message sent successfully",
+    });
   } catch (error) {
     next(error);
   }

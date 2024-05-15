@@ -94,5 +94,6 @@ router.post("/wishlist", isAuthenticated, user.addToWishlist);
 router.delete("/wishlist/:assetId", isAuthenticated, user.RemoveFromWishlist);
 router.get("/get-wishlists", isAuthenticated, user.getUserWishlists);
 router.get("/latest", user.latest);
+router.post("/contact-us", user.Contact);
 
 export default router;
