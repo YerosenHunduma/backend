@@ -58,13 +58,13 @@ export const TotalAsset = catchAsyncError(async (req, res, next) => {
 
 export const latestAssets = catchAsyncError(async (req, res, next) => {
   const latestCars = await Car.find()
-    .select("_id type title price address images currency createdAt")
+    .select("_id type title price address images action createdAt")
     .populate("postedBy", "_id name profile role")
     .populate("postedBy")
     .sort({ createdAt: -1 })
     .limit(5);
   const latestHouses = await House.find()
-    .select("_id type title price address images currency createdAt")
+    .select("_id type title price address images action createdAt")
     .populate("postedBy", "_id name profile role")
     .populate("postedBy")
     .sort({ createdAt: -1 })

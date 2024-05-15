@@ -30,11 +30,6 @@ const houseSchema = new Schema(
       type: Number,
       required: true,
     },
-    currency: {
-      type: String,
-      required: true,
-      enum: ["USD", "ETB", "EUR"],
-    },
     address: String,
     bedrooms: Number,
     bathrooms: Number,

@@ -56,7 +56,7 @@ export const getCars = catchAsyncError(async (req, res, next) => {
   apiFilter.pagination(resPerPage);
   cars = await apiFilter.query
     .clone()
-    .select("_id type title price address images currency createdAt")
+    .select("_id type title price address images action createdAt")
     .populate("postedBy", "_id name profile role");
   res.status(200).json({ resPerPage, filteredCarsCount, cars });
 });
@@ -66,7 +66,20 @@ export const carDetail = catchAsyncError(async (req, res, next) => {
   if (!car) {
     return next(new errorHandler("Car not found", 404));
   }
-  res.status(200).json({ success: true, car });
+
+  const Related = await Car.find({
+    _id: { $ne: car?._id },
+    action: car?.action,
+    type: car?.type,
+    address: {
+      $regex: car?.googleMap[0].city,
+    },
+  })
+    .limit(4)
+    .select("_id type title price address images action createdAt")
+    .populate("postedBy", "_id name profile role");
+
+  res.status(200).json({ success: true, car, Related });
 });
 
 //accessed by an admin

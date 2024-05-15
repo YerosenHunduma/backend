@@ -55,7 +55,7 @@ export const getHouses = catchAsyncError(async (req, res, next) => {
   apiFilter.pagination(resPerPage);
   houses = await apiFilter.query
     .clone()
-    .select("_id type title price address images currency createdAt")
+    .select("_id type title price address images action createdAt")
     .populate("postedBy", "_id name profile role");
   console.log("first order", houses);
   res.status(200).json({ resPerPage, filteredHouseCount, houses });
@@ -68,7 +68,19 @@ export const houseDetail = catchAsyncError(async (req, res, next) => {
     return next(new errorHandler("House not found", 404));
   }
 
-  res.status(200).json({ success: true, house });
+  const Related = await House.find({
+    _id: { $ne: house?._id },
+    action: house?.action,
+    type: house?.type,
+    address: {
+      $regex: house?.googleMap[0].city,
+    },
+  })
+    .limit(4)
+    .select("_id type title price address images action createdAt")
+    .populate("postedBy", "_id name profile role");
+
+  res.status(200).json({ success: true, house, Related });
 });
 
 //accessed by an admin

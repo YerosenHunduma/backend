@@ -25,11 +25,6 @@ const carSchema = new Schema(
       type: Number,
       required: true,
     },
-    currency: {
-      type: String,
-      required: true,
-      enum: ["USD", "ETB", "EUR"],
-    },
     category: String,
     bodyType: String,
     priceType: {
