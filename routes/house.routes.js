@@ -25,4 +25,6 @@ router.get(
   house.getAllHouses
 );
 
+router.delete("/delete-house/:id", isAuthenticated, house.DeleteHouse);
+
 export default router;

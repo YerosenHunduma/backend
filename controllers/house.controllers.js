@@ -3,7 +3,9 @@ import catchAsyncError from "../middlewares/catchAsyncError.js";
 import Broker from "../models/broker.model.js";
 import assetApiFilters from "../utils/assetApiFilters.js";
 import { errorHandler } from "../utils/errorHandler.js";
-import uploadTocloudinary from "../config/cloudinaryConfig.js";
+import uploadTocloudinary, {
+  deleteFromCloudinary,
+} from "../config/cloudinaryConfig.js";
 import { geocoder } from "../config/geoCoderConfig.js";
 
 export const postHouse = catchAsyncError(async (req, res, next) => {
@@ -16,9 +18,9 @@ export const postHouse = catchAsyncError(async (req, res, next) => {
       return next(new errorHandler("User not found", 404));
     }
     const geo = await geocoder.geocode(address);
-    console.log(geo);
     const uploadedImages = req.files.map(async (file) => {
       const result = await uploadTocloudinary(file.path, mainFolderName);
+      console.log(result);
       return result;
     });
     const uploadResults = await Promise.all(uploadedImages);
@@ -43,8 +45,48 @@ export const postHouse = catchAsyncError(async (req, res, next) => {
   }
 });
 
+export const DeleteHouse = catchAsyncError(async (req, res, next) => {
+  console.log(req.params);
+  const house = await House.findById(req.params.id);
+  if (!house) {
+    return next(new errorHandler("Car not found", 404));
+  }
+  if (house.postedBy.toString() !== req.userId) {
+    return next(
+      new errorHandler("You are not authorized to delete this car", 401)
+    );
+  }
+
+  const deletedImages = await Promise.all(
+    house?.images.map(async (image) => {
+      try {
+        await deleteFromCloudinary(image.public_id);
+        return true;
+      } catch (error) {
+        console.error(`Error deleting image from Cloudinary: ${error}`);
+        return false;
+      }
+    })
+  );
+
+  const failedDeletions = deletedImages.filter((deleted) => !deleted);
+
+  if (failedDeletions.length > 0) {
+    return next(
+      new errorHandler(
+        `Failed to delete ${failedDeletions.length} images.`,
+        500
+      )
+    );
+  }
+  await House.deleteOne({ _id: house._id });
+
+  res
+    .status(200)
+    .json({ success: true, message: "House deleted successfully" });
+});
+
 export const getHouses = catchAsyncError(async (req, res, next) => {
-  console.log(req.query);
   const resPerPage = 4;
   const apiFilter = new assetApiFilters(House, req.query)
     .search()
@@ -57,7 +99,6 @@ export const getHouses = catchAsyncError(async (req, res, next) => {
     .clone()
     .select("_id type title price address images action createdAt")
     .populate("postedBy", "_id name profile role");
-  console.log("first order", houses);
   res.status(200).json({ resPerPage, filteredHouseCount, houses });
 });
 

@@ -25,4 +25,6 @@ router.get(
   car.getAllCars
 );
 
+router.delete("/delete-car/:id", isAuthenticated, car.DeleteCar);
+
 export default router;

@@ -27,4 +27,15 @@ const uploadTocloudinary = async (
     });
 };
 
+export const deleteFromCloudinary = async (CloudId) => {
+  await cloudinary.uploader
+    .destroy(CloudId)
+    .then(() => {
+      console.log("deleted");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
 export default uploadTocloudinary;

@@ -650,7 +650,6 @@ export const latest = catchAsyncError(async (req, res, next) => {
       { $limit: limit },
     ]),
   ]);
-  console.log(latestAssets);
 
   let combinedLatestAssets = latestAssets[0].concat(latestAssets[1]);
 

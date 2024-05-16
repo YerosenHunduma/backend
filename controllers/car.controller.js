@@ -6,6 +6,7 @@ import { errorHandler } from "../utils/errorHandler.js";
 import uploadTocloudinary from "../config/cloudinaryConfig.js";
 import { geocoder } from "../config/geoCoderConfig.js";
 import assetApiFilters from "../utils/assetApiFilters.js";
+import { deleteFromCloudinary } from "../config/cloudinaryConfig.js";
 
 export const PostCar = catchAsyncError(async (req, res, next) => {
   const { address } = JSON.parse(req.body.jsonData);
@@ -21,6 +22,85 @@ export const PostCar = catchAsyncError(async (req, res, next) => {
 
     const uploadedImages = req.files.map(async (file) => {
       const result = await uploadTocloudinary(file.path, mainFolderName);
+      return result;
+    });
+
+    const uploadResults = await Promise.all(uploadedImages);
+    const successfulUploads = uploadResults.filter((url) => url !== null);
+
+    const car = new Car({
+      ...JSON.parse(req.body.jsonData),
+      postedBy: req.userId,
+      images: successfulUploads,
+      location: {
+        type: "Point",
+        coordinates: [geo[0]?.longitude, geo[0]?.latitude],
+      },
+      googleMap: geo,
+    });
+    await car.save();
+
+    res.status(200).json({ success: true, car });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const DeleteCar = catchAsyncError(async (req, res, next) => {
+  console.log(req.params);
+  const car = await Car.findById(req.params.id);
+  if (!car) {
+    return next(new errorHandler("Car not found", 404));
+  }
+  if (car.postedBy.toString() !== req.userId) {
+    return next(
+      new errorHandler("You are not authorized to delete this car", 401)
+    );
+  }
+
+  car?.images.map((img) => console.log(img.public_id));
+  const deletedImages = await Promise.all(
+    car?.images.map(async (image) => {
+      try {
+        await deleteFromCloudinary(image.public_id);
+        return true;
+      } catch (error) {
+        console.error(`Error deleting image from Cloudinary: ${error}`);
+        return false;
+      }
+    })
+  );
+
+  const failedDeletions = deletedImages.filter((deleted) => !deleted);
+
+  if (failedDeletions.length > 0) {
+    return next(
+      new errorHandler(
+        `Failed to delete ${failedDeletions.length} images.`,
+        500
+      )
+    );
+  }
+  await House.deleteOne({ _id: house._id });
+
+  res.status(200).json({ success: true, message: "Car deleted successfully" });
+});
+
+export const UpdateCar = catchAsyncError(async (req, res, next) => {
+  const { address } = JSON.parse(req.body.jsonData);
+  const mainFolderName = "cars";
+
+  try {
+    const broker = await Broker.findById(req.userId);
+    if (!broker) {
+      return next(new errorHandler("User not found", 404));
+    }
+
+    const geo = await geocoder.geocode(address);
+
+    const uploadedImages = req.files.map(async (file) => {
+      const result = await uploadTocloudinary(file.path, mainFolderName);
+
       return result;
     });
 
