@@ -95,5 +95,11 @@ router.delete("/wishlist/:assetId", isAuthenticated, user.RemoveFromWishlist);
 router.get("/get-wishlists", isAuthenticated, user.getUserWishlists);
 router.get("/latest", user.latest);
 router.post("/contact-us", user.Contact);
+router.get(
+  "/get-contact-us",
+  isAuthenticated,
+  authorizedRoles("Admin"),
+  user.GetContacts
+);
 
 export default router;

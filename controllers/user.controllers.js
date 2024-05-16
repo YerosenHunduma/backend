@@ -723,3 +723,11 @@ export const Contact = catchAsyncError(async (req, res, next) => {
     next(error);
   }
 });
+
+export const GetContacts = catchAsyncError(async (req, res, next) => {
+  const contacts = await ContactUs.find();
+  res.status(200).json({
+    success: true,
+    contacts,
+  });
+});
