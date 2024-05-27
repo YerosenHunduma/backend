@@ -695,7 +695,7 @@ export const notifyBroker = catchAsyncError(async (req, res, next) => {
       await sendEmail({
         email: existingBroker ? existingBroker.email : existingUser.email,
         subject: "AssetMarketSquare Password Reset",
-        msg,
+        message: msg,
       });
       res.status(200).json({
         success: true,
@@ -725,9 +725,17 @@ export const Contact = catchAsyncError(async (req, res, next) => {
 });
 
 export const GetContacts = catchAsyncError(async (req, res, next) => {
+  const resPerPage = 5;
+  const sort = "-createdAt";
+  const apiFilter = new apiFilters(ContactUs, req.query)
+    .search()
+    .filters()
+    .sort(sort);
+  let contact = await apiFilter.query;
+  const filteredBrokersCount = contact.length;
+  apiFilter.pagination(resPerPage);
+  contact = await apiFilter.query.clone();
+
+  res.status(200).json({ resPerPage, filteredBrokersCount, contact });
   const contacts = await ContactUs.find();
-  res.status(200).json({
-    success: true,
-    contacts,
-  });
 });

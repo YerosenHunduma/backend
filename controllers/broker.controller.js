@@ -7,7 +7,7 @@ import { errorHandler } from "../utils/errorHandler.js";
 
 export const getAllBrokers = catchAsyncError(async (req, res) => {
   const resPerPage = 4;
-  const apiFilter = new apiFilters(Broker, req.query).search().filters();
+  const apiFilter = new apiFilters(Broker, req.query).search().filters().sort();
   let brokers = await apiFilter.query;
   const filteredBrokersCount = brokers.length;
 

@@ -58,7 +58,6 @@ export const DeleteCar = catchAsyncError(async (req, res, next) => {
     );
   }
 
-  car?.images.map((img) => console.log(img.public_id));
   const deletedImages = await Promise.all(
     car?.images.map(async (image) => {
       try {
@@ -86,47 +85,94 @@ export const DeleteCar = catchAsyncError(async (req, res, next) => {
   res.status(200).json({ success: true, message: "Car deleted successfully" });
 });
 
-export const UpdateCar = catchAsyncError(async (req, res, next) => {
-  const { address } = JSON.parse(req.body.jsonData);
+export const deleteImage = catchAsyncError(async (req, res, next) => {
+  const car = await Car.findById(req.params.id);
+  if (!car) {
+    return next(new errorHandler("Car not found", 404));
+  }
+  if (car.postedBy.toString() !== req.userId) {
+    return next(
+      new errorHandler("You are not authorized to delete this image", 401)
+    );
+  }
+
+  const image = car.images.find(
+    (image) => image.public_id === req.body.imageId
+  );
+
+  if (!image) {
+    return next(new errorHandler("Image not found", 404));
+  }
+
+  const deleted = await deleteFromCloudinary(image.public_id);
+  if (!deleted) {
+    return next(new errorHandler("Failed to delete image", 500));
+  }
+
+  car.images = car.images.filter(
+    (image) => image.public_id !== req.body.imageId
+  );
+
+  await car.save();
+  res
+    .status(200)
+    .json({ success: true, message: "Image deleted successfully" });
+});
+
+export const updateCar = catchAsyncError(async (req, res, next) => {
+  const { address, ...carData } = JSON.parse(req.body.jsonData);
   const mainFolderName = "cars";
 
-  try {
-    const broker = await Broker.findById(req.userId);
-    if (!broker) {
-      return next(new errorHandler("User not found", 404));
-    }
+  const car = await Car.findById(req.params.id);
+  if (!car) {
+    return next(new errorHandler("Car not found", 404));
+  }
 
-    const geo = await geocoder.geocode(address);
+  if (car.postedBy.toString() !== req.userId) {
+    return next(
+      new errorHandler("You are not authorized to update this car", 401)
+    );
+  }
 
+  const geo = await geocoder.geocode(address);
+  if (geo.length === 0) {
+    return next(new errorHandler("Invalid address", 400));
+  }
+
+  if (req.files && req.files.length > 0) {
     const uploadedImages = req.files.map(async (file) => {
       const result = await uploadTocloudinary(file.path, mainFolderName);
-
       return result;
     });
 
     const uploadResults = await Promise.all(uploadedImages);
     const successfulUploads = uploadResults.filter((url) => url !== null);
 
-    const car = new Car({
-      ...JSON.parse(req.body.jsonData),
-      postedBy: req.userId,
-      images: successfulUploads,
-      location: {
-        type: "Point",
-        coordinates: [geo[0]?.longitude, geo[0]?.latitude],
-      },
-      googleMap: geo,
-    });
-    await car.save();
+    const newImages = successfulUploads.map((upload) => ({
+      public_id: upload.public_id,
+      secure_url: upload.secure_url,
+    }));
 
-    res.status(200).json({ success: true, car });
-  } catch (error) {
-    next(error);
+    car.images = [...car.images, ...newImages];
   }
+
+  car.address = address;
+  car.location = {
+    type: "Point",
+    coordinates: [geo[0].longitude, geo[0].latitude],
+  };
+  Object.assign(car, carData);
+
+  await car.save();
+
+  res
+    .status(200)
+    .json({ success: true, message: "Car updated successfully", car });
 });
 
 export const getCars = catchAsyncError(async (req, res, next) => {
   const resPerPage = 4;
+  console.log("fjd", req.query);
   const apiFilter = new assetApiFilters(Car, req.query)
     .search()
     .filters()

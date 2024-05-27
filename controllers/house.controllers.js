@@ -46,7 +46,6 @@ export const postHouse = catchAsyncError(async (req, res, next) => {
 });
 
 export const DeleteHouse = catchAsyncError(async (req, res, next) => {
-  console.log(req.params);
   const house = await House.findById(req.params.id);
   if (!house) {
     return next(new errorHandler("Car not found", 404));
@@ -84,6 +83,91 @@ export const DeleteHouse = catchAsyncError(async (req, res, next) => {
   res
     .status(200)
     .json({ success: true, message: "House deleted successfully" });
+});
+
+export const deleteImage = catchAsyncError(async (req, res, next) => {
+  const house = await House.findById(req.params.id);
+  if (!house) {
+    return next(new errorHandler("House not found", 404));
+  }
+  if (house.postedBy.toString() !== req.userId) {
+    return next(
+      new errorHandler("You are not authorized to delete this image", 401)
+    );
+  }
+
+  const image = house.images.find(
+    (image) => image.public_id === req.body.imageId
+  );
+
+  if (!image) {
+    return next(new errorHandler("Image not found", 404));
+  }
+
+  const deleted = await deleteFromCloudinary(image.public_id);
+  if (!deleted) {
+    return next(new errorHandler("Failed to delete image", 500));
+  }
+
+  house.images = house.images.filter(
+    (image) => image.public_id !== req.body.imageId
+  );
+
+  await house.save();
+  res
+    .status(200)
+    .json({ success: true, message: "Image deleted successfully" });
+});
+
+export const updateHouse = catchAsyncError(async (req, res, next) => {
+  const { address, ...houseData } = JSON.parse(req.body.jsonData);
+  const mainFolderName = "house";
+
+  const house = await House.findById(req.params.id);
+  if (!House) {
+    return next(new errorHandler("House not found", 404));
+  }
+
+  if (house.postedBy.toString() !== req.userId) {
+    return next(
+      new errorHandler("You are not authorized to update this House", 401)
+    );
+  }
+
+  const geo = await geocoder.geocode(address);
+  if (geo.length === 0) {
+    return next(new errorHandler("Invalid address", 400));
+  }
+
+  if (req.files && req.files.length > 0) {
+    const uploadedImages = req.files.map(async (file) => {
+      const result = await uploadTocloudinary(file.path, mainFolderName);
+      return result;
+    });
+
+    const uploadResults = await Promise.all(uploadedImages);
+    const successfulUploads = uploadResults.filter((url) => url !== null);
+
+    const newImages = successfulUploads.map((upload) => ({
+      public_id: upload.public_id,
+      secure_url: upload.secure_url,
+    }));
+
+    house.images = [...house.images, ...newImages];
+  }
+
+  house.address = address;
+  house.location = {
+    type: "Point",
+    coordinates: [geo[0].longitude, geo[0].latitude],
+  };
+  Object.assign(house, houseData);
+
+  await house.save();
+
+  res
+    .status(200)
+    .json({ success: true, message: "House updated successfully", house });
 });
 
 export const getHouses = catchAsyncError(async (req, res, next) => {
