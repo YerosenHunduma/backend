@@ -58,10 +58,29 @@ class apiFilters {
   }
   sort(sortedBy) {
     if (sortedBy) {
+      console.log(sortedBy);
+
       const [field, order] = sortedBy.split("_");
 
       const sortObj = order === "desc" ? { [field]: -1 } : { [field]: 1 };
+      console.log("cbndbcsd", sortObj);
+      this.query = this.query.sort(sortObj);
+    } else if (this.queryStr.sort) {
+      const sortBy = this.queryStr.sort.split(",").join(" ");
+      this.query = this.query.sort(sortBy);
+    } else {
+      this.query = this.query.sort("-ratings");
+    }
+    return this;
+  }
 
+  sortHouse(sortedBy) {
+    if (sortedBy) {
+      console.log(sortedBy);
+
+      const [field, order] = sortedBy.split("_");
+
+      const sortObj = order === "desc" ? { [field]: -1 } : { [field]: 1 };
       this.query = this.query.sort(sortObj);
     } else if (this.queryStr.sort) {
       const sortBy = this.queryStr.sort.split(",").join(" ");

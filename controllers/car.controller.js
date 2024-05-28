@@ -47,7 +47,6 @@ export const PostCar = catchAsyncError(async (req, res, next) => {
 });
 
 export const DeleteCar = catchAsyncError(async (req, res, next) => {
-  console.log(req.params);
   const car = await Car.findById(req.params.id);
   if (!car) {
     return next(new errorHandler("Car not found", 404));
@@ -172,11 +171,12 @@ export const updateCar = catchAsyncError(async (req, res, next) => {
 
 export const getCars = catchAsyncError(async (req, res, next) => {
   const resPerPage = 4;
-  console.log("fjd", req.query);
+  console.log(req.query);
+  const sortedBy = req.query.sortedBy || "createdAt_desc";
   const apiFilter = new assetApiFilters(Car, req.query)
     .search()
     .filters()
-    .sort(req.query.sortedBy);
+    .sort(sortedBy);
   let cars = await apiFilter.query;
   const filteredCarsCount = cars.length;
   apiFilter.pagination(resPerPage);

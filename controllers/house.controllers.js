@@ -212,10 +212,12 @@ export const houseDetail = catchAsyncError(async (req, res, next) => {
 
 export const getAllHouses = catchAsyncError(async (req, res, next) => {
   const resPerPage = 4;
+  const sortedBy = req.query.sortedBy || "createdAt_desc";
+  console.log(req.query);
   const apiFilter = new assetApiFilters(House, req.query)
     .search()
     .filters()
-    .sort();
+    .sortHouse(sortedBy);
   let houses = await apiFilter.query;
   const filteredBrokersCount = houses.length;
   apiFilter.pagination(resPerPage);
