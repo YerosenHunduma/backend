@@ -181,7 +181,7 @@ export const getHouses = catchAsyncError(async (req, res, next) => {
   apiFilter.pagination(resPerPage);
   houses = await apiFilter.query
     .clone()
-    .select("_id type title price address images action createdAt")
+    .select("_id type title price address images action createdAt sold")
     .populate("postedBy", "_id name profile role");
   res.status(200).json({ resPerPage, filteredHouseCount, houses });
 });

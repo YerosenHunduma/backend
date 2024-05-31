@@ -6,8 +6,7 @@ class apiFilters {
 
   search() {
     const { keyword, cities, action } = this.queryStr;
-    let filters = {};
-    console.log(keyword);
+    let filters = { sold: false };
     if (keyword) {
       filters.$or = [
         { action: { $regex: keyword, $options: "i" } },

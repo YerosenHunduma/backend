@@ -614,6 +614,7 @@ export const latest = catchAsyncError(async (req, res, next) => {
 
   const latestAssets = await Promise.all([
     Car.aggregate([
+      { $match: { sold: false } },
       {
         $project: {
           _id: 1,
@@ -625,6 +626,7 @@ export const latest = catchAsyncError(async (req, res, next) => {
           currency: 1,
           postedBy: 1,
           createdAt: 1,
+          sold: 1,
           assetType: { $literal: "car" },
         },
       },
@@ -632,6 +634,7 @@ export const latest = catchAsyncError(async (req, res, next) => {
       { $limit: limit },
     ]),
     House.aggregate([
+      { $match: { sold: false } },
       {
         $project: {
           _id: 1,
@@ -643,6 +646,7 @@ export const latest = catchAsyncError(async (req, res, next) => {
           currency: 1,
           postedBy: 1,
           createdAt: 1,
+          sold: 1,
           assetType: { $literal: "house" },
         },
       },
@@ -650,7 +654,6 @@ export const latest = catchAsyncError(async (req, res, next) => {
       { $limit: limit },
     ]),
   ]);
-
   let combinedLatestAssets = latestAssets[0].concat(latestAssets[1]);
 
   combinedLatestAssets.sort((a, b) => {
