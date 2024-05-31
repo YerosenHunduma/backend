@@ -179,9 +179,8 @@ export const brokerCars = catchAsyncError(async (req, res, next) => {
   try {
     const brokerId = req.userId;
     const cars = await Car.find({ postedBy: brokerId })
-      .select("_id type title price address images createdAt")
+      .select("_id type title price address images createdAt sold")
       .populate("postedBy", "_id name profile role");
-    console.log(cars);
     res.status(200).json(cars);
   } catch (error) {
     next(error);
@@ -205,9 +204,8 @@ export const brokerHouses = catchAsyncError(async (req, res, next) => {
   try {
     const brokerId = req.userId;
     const houses = await House.find({ postedBy: brokerId })
-      .select("_id type title price address images createdAt")
+      .select("_id type title price address images createdAt sold")
       .populate("postedBy", "_id name profile role");
-    console.log(houses);
     res.status(200).json(houses);
   } catch (error) {
     next(error);

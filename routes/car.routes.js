@@ -28,5 +28,6 @@ router.get(
 router.delete("/delete-car/:id", isAuthenticated, car.DeleteCar);
 router.delete("/delete-image/:id", isAuthenticated, car.deleteImage);
 router.put("/update-car/:id", isAuthenticated, car.updateCar);
+router.put("/update-sold-car", isAuthenticated, car.soldCar);
 
 export default router;

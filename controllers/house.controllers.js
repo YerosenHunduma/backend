@@ -227,3 +227,20 @@ export const getAllHouses = catchAsyncError(async (req, res, next) => {
     .populate("postedBy");
   res.status(200).json({ resPerPage, filteredBrokersCount, houses });
 });
+
+export const soldHouse = catchAsyncError(async (req, res, next) => {
+  const house = await House.findById(req.body.id);
+  if (!house) {
+    return next(new errorHandler("House not found", 404));
+  }
+  if (house.postedBy.toString() !== req.userId) {
+    return next(
+      new errorHandler("You are not authorized to update this car", 401)
+    );
+  }
+  house.sold = true;
+  await house.save();
+  res
+    .status(200)
+    .json({ success: true, message: "House updated successfully" });
+});

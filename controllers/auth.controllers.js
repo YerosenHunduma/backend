@@ -48,7 +48,7 @@ export const Signin = catchAsyncError(async (req, res, next) => {
         { _id: user._id, role: user.role },
         process.env.jwt_secret_key,
         {
-          expiresIn: "1h",
+          expiresIn: "1d",
         }
       );
       const { password: pass, ...userInfo } = user._doc;

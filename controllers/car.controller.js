@@ -225,3 +225,18 @@ export const getAllCars = catchAsyncError(async (req, res, next) => {
     .populate("postedBy");
   res.status(200).json({ resPerPage, filteredBrokersCount, car });
 });
+
+export const soldCar = catchAsyncError(async (req, res, next) => {
+  const car = await Car.findById(req.body.id);
+  if (!car) {
+    return next(new errorHandler("Car not found", 404));
+  }
+  if (car.postedBy.toString() !== req.userId) {
+    return next(
+      new errorHandler("You are not authorized to update this car", 401)
+    );
+  }
+  car.sold = true;
+  await car.save();
+  res.status(200).json({ success: true, message: "Car updated successfully" });
+});

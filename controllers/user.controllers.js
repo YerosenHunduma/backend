@@ -270,7 +270,7 @@ export const asset_per_month = catchAsyncError(async (req, res, next) => {
 
 export const addToWishlist = catchAsyncError(async (req, res, next) => {
   const userId = req.userId;
-  const collection = req.role[0] === "Admin" ? "User" : req.role[0];
+  const collection = req.role[0] === "Broker" ? "Broker" : "User";
   try {
     let user;
     if (collection === "User") {
@@ -297,7 +297,7 @@ export const addToWishlist = catchAsyncError(async (req, res, next) => {
 
 export const RemoveFromWishlist = catchAsyncError(async (req, res, next) => {
   const userId = req.userId;
-  const collection = req.role[0] === "Admin" ? "User" : req.role[0];
+  const collection = req.role[0] === "Broker" ? "Broker" : "User";
   try {
     let user;
     if (collection === "User") {

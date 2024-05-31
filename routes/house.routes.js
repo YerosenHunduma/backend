@@ -28,5 +28,6 @@ router.get(
 router.delete("/delete-house/:id", isAuthenticated, house.DeleteHouse);
 router.delete("/delete-image/:id", isAuthenticated, house.deleteImage);
 router.put("/update-house/:id", isAuthenticated, house.updateHouse);
+router.put("/update-sold-house", isAuthenticated, house.soldHouse);
 
 export default router;
