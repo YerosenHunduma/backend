@@ -2,6 +2,8 @@ import jwt from "jsonwebtoken";
 import { errorHandler } from "../utils/errorHandler.js";
 
 export const isAuthenticated = (req, res, next) => {
+  console.log(req);
+  console.log(req.cookies);
   const authToken = req.cookies.access_token;
   if (!authToken) {
     return next(new errorHandler("Authorization invalid", 400));
