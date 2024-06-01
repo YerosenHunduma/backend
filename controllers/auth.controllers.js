@@ -53,7 +53,9 @@ export const Signin = catchAsyncError(async (req, res, next) => {
       );
       const { password: pass, ...userInfo } = user._doc;
       res
-        .cookie("access_token", token, { httpOnly: true, sameSite: "none" })
+        .cookie("access_token", token, {
+          httpOnly: true,
+        })
         .status(200)
         .json({ success: true, userInfo });
     } catch (error) {

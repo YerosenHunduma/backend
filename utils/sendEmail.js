@@ -9,7 +9,6 @@ const sendEmail = async (options) => {
       pass: process.env.TP_SMTP_PASSWORD,
     },
   });
-  console.log(options);
   const message = {
     from: `${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>`,
     to: options.email,

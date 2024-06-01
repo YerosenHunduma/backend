@@ -18,12 +18,7 @@ process.on("uncaughtException", (error) => {
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "https://asset-marketsquare-react-jsou.onrender.com",
-    credentials: true,
-  })
-);
+app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 
