@@ -13,7 +13,7 @@ const chapa = new Chapa({
 
 export const PaymentService = catchAsyncError(async (req, res, next) => {
   const tx_ref = await chapa.generateTransactionReference();
-
+  console.log(req.body);
   const { name, lastName, email, amount } = req.body;
   const broker = await Broker.findOne({ email });
   if (!broker) {
@@ -45,7 +45,6 @@ export const PaymentService = catchAsyncError(async (req, res, next) => {
     callback_url: "https://yero-chapa.onrender.com/api/payment/myWebhook,",
     return_url: "https://yerosen.com/",
   });
-
   return res.status(200).json({ success: true, data });
 });
 
@@ -84,11 +83,11 @@ export const chapaWebhook = catchAsyncError(async (req, res) => {
     } else if (amount == 500) {
       plan = "quarterly";
       endDate = new Date(startDate.getTime());
-      endDate.setMonth(startDate.getMonth() + 1);
+      endDate.setMonth(startDate.getMonth() + 3);
     } else if (amount == 1000) {
       plan = "yearly";
       endDate = new Date(startDate.getTime());
-      endDate.setMonth(startDate.getMonth() + 1);
+      endDate.setMonth(startDate.getMonth() + 12);
     } else {
       return next(errorHandler("Invalid amount", 400));
     }
