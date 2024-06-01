@@ -13,7 +13,7 @@ const chapa = new Chapa({
 
 export const PaymentService = catchAsyncError(async (req, res, next) => {
   const tx_ref = await chapa.generateTransactionReference();
-  console.log(req.body);
+  console.log(req);
   const { name, lastName, email, amount } = req.body;
   const broker = await Broker.findOne({ email });
   if (!broker) {
