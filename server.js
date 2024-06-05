@@ -34,11 +34,14 @@ import "./config/passport.js";
 
 app.use("/api", rootRoute);
 
-const server = app.listen(process.env.PORT, () => {
-  console.log(
-    `app running on port ${process.env.PORT} in ${process.env.NODE_ENV} mode !`
-  );
-});
+const server = app
+  .listen
+  // process.env.PORT, () => {
+  //   console.log(
+  //     `app running on port ${process.env.PORT} in ${process.env.NODE_ENV} mode !`
+  //   );
+  // }
+  ();
 
 // seed();
 
