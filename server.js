@@ -18,9 +18,13 @@ process.on("uncaughtException", (error) => {
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+];
+
 app.use(
   cors({
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
   })
 );
