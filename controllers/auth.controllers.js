@@ -115,6 +115,7 @@ export const updateProfile = catchAsyncError(async (req, res, next) => {
 });
 
 export const changePassword = catchAsyncError(async (req, res, next) => {
+  console.log(req.body);
   const { oldPassword, newPassword, confirmNewPassword } = req.body;
   const error = validationResult(req);
   try {

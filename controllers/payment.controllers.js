@@ -13,7 +13,6 @@ const chapa = new Chapa({
 
 export const PaymentService = catchAsyncError(async (req, res, next) => {
   const tx_ref = await chapa.generateTransactionReference();
-  console.log(req);
   const { name, lastName, email, amount } = req.body;
   const broker = await Broker.findOne({ email });
   if (!broker) {
@@ -43,7 +42,7 @@ export const PaymentService = catchAsyncError(async (req, res, next) => {
     amount: amount,
     tx_ref: tx_ref,
     callback_url: "https://yero-chapa.onrender.com/api/payment/myWebhook,",
-    return_url: "https://yerosen.com/",
+    return_url: "https://asset-marketsquare-react-jsou.onrender.com",
   });
   return res.status(200).json({ success: true, data });
 });

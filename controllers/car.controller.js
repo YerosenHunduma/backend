@@ -47,6 +47,7 @@ export const PostCar = catchAsyncError(async (req, res, next) => {
 });
 
 export const DeleteCar = catchAsyncError(async (req, res, next) => {
+  console.log(req.params);
   const car = await Car.findById(req.params.id);
   if (!car) {
     return next(new errorHandler("Car not found", 404));
@@ -79,7 +80,7 @@ export const DeleteCar = catchAsyncError(async (req, res, next) => {
       )
     );
   }
-  await House.deleteOne({ _id: house._id });
+  await Car.deleteOne({ _id: car._id });
 
   res.status(200).json({ success: true, message: "Car deleted successfully" });
 });

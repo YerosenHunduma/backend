@@ -20,7 +20,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://asset-marketsquare-react-jsou.onrender.com"
+  "https://asset-marketsquare-react-jsou.onrender.com",
 ];
 
 app.use(
