@@ -46,7 +46,7 @@ class apiFilters {
       delete queryCopy[field];
     });
 
-    queryCopy.isApproved = false;
+    queryCopy.isApproved = true;
     this.query = this.query.find(queryCopy);
 
     return this;

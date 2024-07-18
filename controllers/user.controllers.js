@@ -323,6 +323,7 @@ export const RemoveFromWishlist = catchAsyncError(async (req, res, next) => {
 });
 
 export const getUserWishlists = catchAsyncError(async (req, res, next) => {
+  console.log(req.userId);
   try {
     const userId = req.userId;
     const collection = req.role[0] === "Admin" ? "User" : req.role[0];

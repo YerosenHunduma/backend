@@ -5,4 +5,8 @@ export class errorHandler extends Error {
 
     Error.captureStackTrace(this, errorHandler);
   }
+
+  static createError(message, statusCode) {
+    return new errorHandler(message, statusCode);
+  }
 }

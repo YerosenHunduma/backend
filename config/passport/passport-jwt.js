@@ -4,7 +4,6 @@ import { errorHandler } from "../../utils/errorHandler.js";
 
 const cookieExtractor = (req) => {
   let token = null;
-  console.log(req.cookies.access_token);
   if (req.cookies.access_token == undefined) {
     return next(new errorHandler("Your are not authorized to access", 400));
   }

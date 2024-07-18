@@ -1,13 +1,23 @@
+// config/dbConfig.js
 import mongoose from "mongoose";
 
-mongoose.connect(process.env.remote_Mongo_uri);
+class Database {
+  constructor() {
+    this._connect();
+  }
 
-const dbConection = mongoose.connection;
+  _connect() {
+    mongoose.connect(process.env.remote_Mongo_uri);
 
-dbConection.on("error", (error) => console.log("Connection error:", error));
+    mongoose.connection.on("error", (error) => {
+      console.log("Connection error:", error);
+    });
 
-dbConection.on("connected", () =>
-  console.log("Connected to database successfull")
-);
+    mongoose.connection.on("connected", () => {
+      console.log("Connected to database successfully");
+    });
+  }
+}
 
-export default dbConection;
+// Export a single instance of the Database class
+export default new Database();
