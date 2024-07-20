@@ -20,7 +20,6 @@ export const postHouse = catchAsyncError(async (req, res, next) => {
     const geo = await geocoder.geocode(address);
     const uploadedImages = req.files.map(async (file) => {
       const result = await uploadTocloudinary(file.path, mainFolderName);
-      console.log(result);
       return result;
     });
     const uploadResults = await Promise.all(uploadedImages);

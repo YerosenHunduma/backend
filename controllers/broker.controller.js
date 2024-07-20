@@ -26,7 +26,6 @@ export const getBroker = catchAsyncError(async (req, res) => {
 
 export const createBrokerReviews = catchAsyncError(async (req, res, next) => {
   const { rating, comment, brokerId } = req.body;
-  console.log(req.body);
   const review = {
     user: req.userId,
     rating,
@@ -185,19 +184,6 @@ export const brokerCars = catchAsyncError(async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-
-  // const resPerPage = 5;
-  // const sort = "-createdAt";
-  // const apiFilter = new apiFilters(Car, req.userId)
-  //   .search()
-  //   .filters()
-  //   .sort(sort);
-  // let cars = await apiFilter.query;
-  // const filteredCarsCount = cars.length;
-  // apiFilter.pagination(resPerPage);
-  // cars = await apiFilter.query.clone();
-
-  // res.status(200).json({ resPerPage, filteredCarsCount, cars });
 });
 
 export const brokerHouses = catchAsyncError(async (req, res, next) => {
